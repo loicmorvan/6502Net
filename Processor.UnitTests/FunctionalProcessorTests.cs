@@ -1,21 +1,21 @@
-﻿using System.IO;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Processor.UnitTests
 {
-	[TestFixture]
-	public class FunctionalProcessorTests
-	{
-		public byte[] KdTestProgram;
+    [TestFixture]
+    public class FunctionalProcessorTests
+    {
+        public byte[] KdTestProgram;
 
-		public byte[] InterruptProgram;
+        public byte[] InterruptProgram;
 
         public byte[] CycleProgram;
 
         public List<TestData> CycleTestDataResults;
-       
+
 
         /// <summary>
         /// Each Test Case in Klaus_Dormann's Functional Test Program. 
@@ -67,78 +67,78 @@ namespace Processor.UnitTests
         [TestCase(0x2A, 0x3364)] // full binary add/subtract test iterates through all combinations of operands and carry input uses increments/decrements to predict result & result flags
         [TestCase(0x2B, 0x3408)] // Binary Switch Test
         [TestCase(0xF0, 0x3463)] // decimal add/subtract test  *** WARNING - tests documented behavior only! ***   only valid BCD operands are tested, N V Z flags are ignored iterates through all valid combinations of operands and carry input uses increments/decrements to predict result & carry flag
-		// ReSharper disable InconsistentNaming
-		public void Klaus_Dorman_Functional_Test(int accumulator, int programCounter)
-		// ReSharper restore InconsistentNaming
-		{
-			var processor = new Processor();
-			processor.LoadProgram(0x400, KdTestProgram, 0x400);
-			var numberOfCycles = 0;
+                                 // ReSharper disable InconsistentNaming
+        public void Klaus_Dorman_Functional_Test(int accumulator, int programCounter)
+        // ReSharper restore InconsistentNaming
+        {
+            var processor = new Processor();
+            processor.LoadProgram(0x400, KdTestProgram, 0x400);
+            var numberOfCycles = 0;
 
-			while (true)
-			{
-				processor.NextStep();
-				numberOfCycles++;
+            while (true)
+            {
+                processor.NextStep();
+                numberOfCycles++;
 
-				if (processor.ProgramCounter == programCounter)
-					break;
+                if (processor.ProgramCounter == programCounter)
+                    break;
 
-				if (numberOfCycles > 40037912)
-					Assert.Fail("Maximum Number of Cycles Exceeded");
-			}
+                if (numberOfCycles > 40037912)
+                    Assert.Fail("Maximum Number of Cycles Exceeded");
+            }
 
-			Assert.That(processor.Accumulator, Is.EqualTo(accumulator));
-			// ReSharper disable FunctionNeverReturns
-		}
-		// ReSharper restore FunctionNeverReturns
+            Assert.That(processor.Accumulator, Is.EqualTo(accumulator));
+            // ReSharper disable FunctionNeverReturns
+        }
+        // ReSharper restore FunctionNeverReturns
 
 
 
-		/// <summary>
-		/// Each Test Group in Klaus_Dormann's Interrupt Test Program. 
-		/// See https://github.com/Klaus2m5/6502_65C02_functional_tests
-		/// This tests that the IRQ BRK and NMI all function correctly.
-		/// </summary>
-		[TestCase(0x04f9)] // IRQ Tests
-		[TestCase(0x05b7)] // BRK Tests
-		[TestCase(0x068d)] // NMI Tests
-		[TestCase(0x06ec)] // Disable Interrupt Tests
-		public void Klaus_Dorman_Interrupt_Test(int programCounter)
-		{
-			var previousInterruptWatchValue = 0;
-			//var previousInterruptDisableCleared = false;
+        /// <summary>
+        /// Each Test Group in Klaus_Dormann's Interrupt Test Program. 
+        /// See https://github.com/Klaus2m5/6502_65C02_functional_tests
+        /// This tests that the IRQ BRK and NMI all function correctly.
+        /// </summary>
+        [TestCase(0x04f9)] // IRQ Tests
+        [TestCase(0x05b7)] // BRK Tests
+        [TestCase(0x068d)] // NMI Tests
+        [TestCase(0x06ec)] // Disable Interrupt Tests
+        public void Klaus_Dorman_Interrupt_Test(int programCounter)
+        {
+            var previousInterruptWatchValue = 0;
+            //var previousInterruptDisableCleared = false;
 
-			var processor = new Processor();
-			processor.LoadProgram(0x400, InterruptProgram, 0x400);
-			var numberOfCycles = 0;
+            var processor = new Processor();
+            processor.LoadProgram(0x400, InterruptProgram, 0x400);
+            var numberOfCycles = 0;
 
-			while (true)
-			{
-				
-				var interruptWatch = processor.ReadMemoryValue(0xbffc);
-				
-				//This is used to simulate the edge triggering of an NMI. If we didn't do this we would get stuck in a loop forever
-				if (interruptWatch != previousInterruptWatchValue)
-				{
-					previousInterruptWatchValue = interruptWatch;
+            while (true)
+            {
 
-					if ((interruptWatch & 2) != 0)
-						processor.TriggerNmi = true;
-				}
-				
-				if (!processor.DisableInterruptFlag && (interruptWatch & 1) != 0)
-					processor.InterruptRequest();
+                var interruptWatch = processor.ReadMemoryValue(0xbffc);
 
-				processor.NextStep();
-				numberOfCycles++;
+                //This is used to simulate the edge triggering of an NMI. If we didn't do this we would get stuck in a loop forever
+                if (interruptWatch != previousInterruptWatchValue)
+                {
+                    previousInterruptWatchValue = interruptWatch;
 
-				if (processor.ProgramCounter == programCounter)
-					break;
+                    if ((interruptWatch & 2) != 0)
+                        processor.TriggerNmi = true;
+                }
 
-				if (numberOfCycles > 100000)
-					Assert.Fail("Maximum Number of Cycles Exceeded");
-			}
-		}
+                if (!processor.DisableInterruptFlag && (interruptWatch & 1) != 0)
+                    processor.InterruptRequest();
+
+                processor.NextStep();
+                numberOfCycles++;
+
+                if (processor.ProgramCounter == programCounter)
+                    break;
+
+                if (numberOfCycles > 100000)
+                    Assert.Fail("Maximum Number of Cycles Exceeded");
+            }
+        }
 
         [Test]
         public void Cycle_Test()
@@ -149,7 +149,7 @@ namespace Processor.UnitTests
 
             while (true)
             {
-                if (numberofLoops == 249 )
+                if (numberofLoops == 249)
                 {
 
                 }
@@ -176,8 +176,8 @@ namespace Processor.UnitTests
         }
 
         [SetUp]
-		public void SetupPrograms()
-		{
+        public void SetupPrograms()
+        {
             const string EnvironmentVariable = "TestDataDirectory";
             string CycleTestDataResultsDir = Environment.GetEnvironmentVariable(EnvironmentVariable);
 
@@ -187,7 +187,7 @@ namespace Processor.UnitTests
             }
 
             KdTestProgram = File.ReadAllBytes(Path.Combine(CycleTestDataResultsDir, "6502_functional_test.bin"));
-			InterruptProgram = File.ReadAllBytes(Path.Combine(CycleTestDataResultsDir, "6502_interrupt_test.bin"));
+            InterruptProgram = File.ReadAllBytes(Path.Combine(CycleTestDataResultsDir, "6502_interrupt_test.bin"));
             CycleProgram = File.ReadAllBytes(Path.Combine(CycleTestDataResultsDir, "6502_cycle_test.bin"));
 
             LoadCycleTestResults(CycleTestDataResultsDir, "cycle_test_data.csv");
@@ -240,8 +240,8 @@ namespace Processor.UnitTests
                 throw ex;
             }
 
-            
-            
+
+
         }
     }
 }
