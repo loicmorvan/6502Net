@@ -27,7 +27,7 @@ namespace Processor.UnitTests
             Assert.That(processor.Accumulator, Is.EqualTo(0));
             Assert.That(processor.XRegister, Is.EqualTo(0));
             Assert.That(processor.YRegister, Is.EqualTo(0));
-            Assert.That(processor.CurrentOpCode, Is.EqualTo(0));
+            Assert.That(processor.CurrentOpCode, Is.EqualTo(OpCode.BrkImplied));
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
         }
 
