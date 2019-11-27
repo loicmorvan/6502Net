@@ -142,6 +142,7 @@ namespace Processor.UnitTests
             Assert.That(processor.CarryFlag, Is.EqualTo(expectedValue));
         }
 
+        // TODO: `setCarryFlag` is not used, seems to be a mistake.
         [TestCase(98, 1, false, false)]
         [TestCase(98, 1, true, false)]
         [TestCase(99, 1, false, false)]
@@ -2299,20 +2300,13 @@ namespace Processor.UnitTests
         public void Transfer_Correct_Value_Set(byte operation, RegisterMode transferFrom, RegisterMode transferTo)
         {
             var processor = new Processor();
-            byte loadOperation;
 
-            switch (transferFrom)
+            byte loadOperation = transferFrom switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new[] { loadOperation, (byte)0x03, operation }, 0x00);
             processor.NextStep();
@@ -2353,20 +2347,13 @@ namespace Processor.UnitTests
         public void Transfer_Negative_Value_Set(byte operation, byte value, RegisterMode transferFrom, bool expectedResult)
         {
             var processor = new Processor();
-            byte loadOperation;
 
-            switch (transferFrom)
+            byte loadOperation = transferFrom switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new[] { loadOperation, value, operation }, 0x00);
             processor.NextStep();
@@ -2386,20 +2373,13 @@ namespace Processor.UnitTests
         public void Transfer_Zero_Value_Set(byte operation, byte value, RegisterMode transferFrom, bool expectedResult)
         {
             var processor = new Processor();
-            byte loadOperation;
 
-            switch (transferFrom)
+            byte loadOperation = transferFrom switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new[] { loadOperation, value, operation }, 0x00);
             processor.NextStep();
@@ -2717,20 +2697,13 @@ namespace Processor.UnitTests
         public void Immediate_Mode_Compare_Operation_Has_Correct_Result(byte operation, byte accumulatorValue, byte memoryValue, RegisterMode mode)
         {
             var processor = new Processor();
-            byte loadOperation;
 
-            switch (mode)
+            byte loadOperation = mode switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new[] { loadOperation, accumulatorValue, operation, memoryValue }, 0x00);
 
@@ -2750,20 +2723,12 @@ namespace Processor.UnitTests
         {
             var processor = new Processor();
 
-            byte loadOperation;
-
-            switch (mode)
+            byte loadOperation = mode switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new byte[] { loadOperation, accumulatorValue, operation, 0x04, memoryValue }, 0x00);
             processor.NextStep();
@@ -2782,20 +2747,12 @@ namespace Processor.UnitTests
         {
             var processor = new Processor();
 
-            byte loadOperation;
-
-            switch (mode)
+            byte loadOperation = mode switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new byte[] { loadOperation, accumulatorValue, operation, 0x05, 0x00, memoryValue }, 0x00);
             processor.NextStep();
@@ -2892,19 +2849,12 @@ namespace Processor.UnitTests
         {
             var processor = new Processor();
 
-            byte loadOperation;
-            switch (mode)
+            byte loadOperation = mode switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new byte[] { loadOperation, 0x04, operation, 0x00, 0x05 }, 0x00);
             processor.NextStep();
@@ -2922,19 +2872,12 @@ namespace Processor.UnitTests
         {
             var processor = new Processor();
 
-            byte loadOperation;
-            switch (mode)
+            byte loadOperation = mode switch
             {
-                case RegisterMode.Accumulator:
-                    loadOperation = 0xA9;
-                    break;
-                case RegisterMode.XRegister:
-                    loadOperation = 0xA2;
-                    break;
-                default:
-                    loadOperation = 0xA0;
-                    break;
-            }
+                RegisterMode.Accumulator => 0xA9,
+                RegisterMode.XRegister => 0xA2,
+                _ => 0xA0,
+            };
 
             processor.LoadProgram(0, new byte[] { loadOperation, valueToLoad, operation, 0x04 }, 0x00);
             processor.NextStep();

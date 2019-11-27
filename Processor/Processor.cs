@@ -2160,7 +2160,7 @@ namespace Processor
         /// <param name="addressingMode">The addressing mode to use</param>
         private void EorOperation(AddressingMode addressingMode)
         {
-            Accumulator = Accumulator ^ ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
+            Accumulator ^= ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
 
             SetNegativeFlag(Accumulator);
             SetZeroFlag(Accumulator);
@@ -2213,7 +2213,7 @@ namespace Processor
         /// <param name="addressingMode">The addressing mode to use</param>
         private void OrOperation(AddressingMode addressingMode)
         {
-            Accumulator = Accumulator | ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
+            Accumulator |= ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
 
             SetNegativeFlag(Accumulator);
             SetZeroFlag(Accumulator);
@@ -2252,7 +2252,7 @@ namespace Processor
             value = (value << 1) & 0xFE;
 
             if (CarryFlag)
-                value = value | 0x01;
+                value |= 0x01;
 
             CarryFlag = newCarry;
 
@@ -2301,7 +2301,7 @@ namespace Processor
 
             //If the carry flag is set then 0x
             if (CarryFlag)
-                value = value | 0x80;
+                value |= 0x80;
 
             CarryFlag = newCarry;
 

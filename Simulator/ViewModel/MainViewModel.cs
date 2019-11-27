@@ -426,12 +426,10 @@ namespace Simulator.ViewModel
 
 			foreach (var breakpoint in Breakpoints.Where(x => x.IsEnabled))
 			{
-				int value ;
+                if (!int.TryParse(breakpoint.Value, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out int value))
+                    continue;
 
-				if (!int.TryParse(breakpoint.Value, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out value))
-					continue;
-
-				if (breakpoint.Type == BreakpointType.NumberOfCycleType && value == NumberOfCycles)
+                if (breakpoint.Type == BreakpointType.NumberOfCycleType && value == NumberOfCycles)
 				{
 					_breakpointTriggered = true;
 					RunPause();
@@ -477,34 +475,22 @@ namespace Simulator.ViewModel
 
 		private int GetSleepValue()
 		{
-			switch (CpuSpeed)
-			{
-				case 0:
-					return 550;
-				case 1:
-					return 550;
-				case 2:
-					return 440;
-				case 3:
-					return 330;
-				case 4:
-					return 220;
-				case 5:
-					return 160;
-				case 6:
-					return 80;
-				case 7:
-					return 40;
-				case 8:
-					return 20;
-				case 9:
-					return 10;
-				case 10:
-					return 5;
-				default:
-					return 5;
-			}
-		}
+            return CpuSpeed switch
+            {
+                0 => 550,
+                1 => 550,
+                2 => 440,
+                3 => 330,
+                4 => 220,
+                5 => 160,
+                6 => 80,
+                7 => 40,
+                8 => 20,
+                9 => 10,
+                10 => 5,
+                _ => 5,
+            };
+        }
 
 		private void OpenFile()
 		{

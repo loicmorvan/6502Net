@@ -197,51 +197,40 @@ namespace Processor.UnitTests
         {
             var path = Path.Combine(folder, filename);
 
-            var reader =
-                new StreamReader(File.OpenRead(path));
+            using var reader = new StreamReader(File.OpenRead(path));
 
             CycleTestDataResults = new List<TestData>();
             var lineNumber = 0;
 
-            try
+            while (!reader.EndOfStream)
             {
-                while (!reader.EndOfStream)
+                var line = reader.ReadLine();
+                var values = line.Split(',');
+
+                if (int.Parse(values[0]) % 2 != 0)
                 {
-                    var line = reader.ReadLine();
-                    var values = line.Split(',');
-
-                    if (int.Parse(values[0]) % 2 != 0)
-                    {
-                        lineNumber++;
-                        continue;
-                    }
-
-                    if (string.IsNullOrEmpty(values[8]))
-                    {
-                        continue;
-                    }
-
-                    CycleTestDataResults.Add(new TestData
-                    {
-                        ProgramCounter = Int32.Parse(values[1], System.Globalization.NumberStyles.HexNumber),
-                        Accumulator = Int32.Parse(values[2], System.Globalization.NumberStyles.HexNumber),
-                        XRegister = Int32.Parse(values[3], System.Globalization.NumberStyles.HexNumber),
-                        YRegister = Int32.Parse(values[4], System.Globalization.NumberStyles.HexNumber),
-                        Flags = Int32.Parse(values[5], System.Globalization.NumberStyles.HexNumber),
-                        StackPointer = Int32.Parse(values[6], System.Globalization.NumberStyles.HexNumber),
-                        CycleCount = int.Parse(values[7]),
-                    });
-
                     lineNumber++;
+                    continue;
                 }
+
+                if (string.IsNullOrEmpty(values[8]))
+                {
+                    continue;
+                }
+
+                CycleTestDataResults.Add(new TestData
+                {
+                    ProgramCounter = Int32.Parse(values[1], System.Globalization.NumberStyles.HexNumber),
+                    Accumulator = Int32.Parse(values[2], System.Globalization.NumberStyles.HexNumber),
+                    XRegister = Int32.Parse(values[3], System.Globalization.NumberStyles.HexNumber),
+                    YRegister = Int32.Parse(values[4], System.Globalization.NumberStyles.HexNumber),
+                    Flags = Int32.Parse(values[5], System.Globalization.NumberStyles.HexNumber),
+                    StackPointer = Int32.Parse(values[6], System.Globalization.NumberStyles.HexNumber),
+                    CycleCount = int.Parse(values[7]),
+                });
+
+                lineNumber++;
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-
-
         }
     }
 }
