@@ -9,28 +9,20 @@ namespace Processor
     /// An Implementation of a 6502 Processor
     /// </summary>
     [Serializable]
-    public class Processor
+    public sealed class Processor
     {
-        #region Fields
         private int _programCounter;
         private int _stackPointer;
         private int _cycleCount;
         private bool _previousInterrupt;
         private bool _interrupt;
-        #endregion
-
-        //All of the properties here are public and read only to facilitate ease of debugging and testing.
-        #region Properties
-        /// <summary>
-        /// The memory
-        /// </summary>
-        protected byte[] Memory { get; private set; }
+        private readonly byte[] _memory;
 
         /// <summary>
         /// The Accumulator. This value is implemented as an integer intead of a byte.
         /// This is done so we can detect wrapping of the value and set the correct number of cycles.
         /// </summary>
-        public int Accumulator { get; protected set; }
+        public int Accumulator { get; private set; }
         /// <summary>
         /// The X Index Register
         /// </summary>
@@ -54,8 +46,8 @@ namespace Processor
         /// </summary>
         public int ProgramCounter
         {
-            get { return _programCounter; }
-            private set { _programCounter = WrapProgramCounter(value); }
+            get => _programCounter;
+            private set => _programCounter = WrapProgramCounter(value);
         }
         /// <summary>
         /// Points to the Current Position of the Stack.
@@ -63,15 +55,21 @@ namespace Processor
         /// </summary>
         public int StackPointer
         {
-            get { return _stackPointer; }
+            get => _stackPointer;
             private set
             {
                 if (value > 0xFF)
+                {
                     _stackPointer = value - 0x100;
+                }
                 else if (value < 0x00)
+                {
                     _stackPointer = value + 0x100;
+                }
                 else
+                {
                     _stackPointer = value;
+                }
             }
         }
 
@@ -85,7 +83,7 @@ namespace Processor
         /// This is the carry flag. when adding, if the result is greater than 255 or 99 in BCD Mode, then this bit is enabled. 
         /// In subtraction this is reversed and set to false if a borrow is required IE the result is less than 0
         /// </summary>
-        public bool CarryFlag { get; protected set; }
+        public bool CarryFlag { get; private set; }
         /// <summary>
         /// Is true if one of the registers is set to zero.
         /// </summary>
@@ -108,7 +106,7 @@ namespace Processor
         /// 64 + 64 = -128 
         /// -128 + -128 = 0
         /// </summary>
-        public bool OverflowFlag { get; protected set; }
+        public bool OverflowFlag { get; private set; }
         /// <summary>
         /// Set to true if the result of an operation is negative in ADC and SBC operations. 
         /// Remember that 128-256 represent negative numbers when doing signed math.
@@ -123,18 +121,13 @@ namespace Processor
 
         /// Set to true when an IRQ has occurred and is being processed by the CPU
         public bool TriggerIRQ { get; private set; }
-        #endregion
 
-        #region Public Methods
         /// <summary>
         /// Default Constructor, Instantiates a new instance of the processor.
         /// </summary>
         public Processor()
         {
-            Memory = new byte[0x10000];
-            StackPointer = 0x100;
-
-            CycleCountIncrementedAction = () => { };
+            _memory = new byte[0x10000];
         }
 
         /// <summary>
@@ -149,9 +142,9 @@ namespace Processor
             //Set the Program Counter to the Reset Vector Address.
             ProgramCounter = 0xFFFC;
             //Reset the Program Counter to the Address contained in the Reset Vector
-            ProgramCounter = (Memory[ProgramCounter] | (Memory[ProgramCounter + 1] << 8)); ;
+            ProgramCounter = (_memory[ProgramCounter] | (_memory[ProgramCounter + 1] << 8)); ;
 
-            CurrentOpCode = Memory[ProgramCounter];
+            CurrentOpCode = _memory[ProgramCounter];
 
             //SetDisassembly();
 
@@ -217,15 +210,19 @@ namespace Processor
         /// <param name="program">The program to be loaded</param>
         public void LoadProgram(int offset, byte[] program)
         {
-            if (offset > Memory.Length)
+            if (offset > _memory.Length)
+            {
                 throw new InvalidOperationException("Offset '{0}' is larger than memory size '{1}'");
+            }
 
-            if (program.Length > Memory.Length + offset)
-                throw new InvalidOperationException(string.Format("Program Size '{0}' Cannot be Larger than Memory Size '{1}' plus offset '{2}'", program.Length, Memory.Length, offset));
+            if (program.Length > _memory.Length + offset)
+            {
+                throw new InvalidOperationException(string.Format("Program Size '{0}' Cannot be Larger than Memory Size '{1}' plus offset '{2}'", program.Length, _memory.Length, offset));
+            }
 
             for (var i = 0; i < program.Length; i++)
             {
-                Memory[i + offset] = program[i];
+                _memory[i + offset] = program[i];
             }
 
             Reset();
@@ -244,8 +241,10 @@ namespace Processor
         /// </summary>
         public void ClearMemory()
         {
-            for (var i = 0; i < Memory.Length; i++)
-                Memory[i] = 0x00;
+            for (var i = 0; i < _memory.Length; i++)
+            {
+                _memory[i] = 0x00;
+            }
         }
 
         /// <summary>
@@ -253,9 +252,9 @@ namespace Processor
         /// </summary>
         /// <param name="address">The address to return</param>
         /// <returns>the byte being returned</returns>
-        public virtual byte ReadMemoryValue(int address)
+        public byte ReadMemoryValue(int address)
         {
-            var value = Memory[address];
+            var value = _memory[address];
             IncrementCycleCount();
             return value;
         }
@@ -265,9 +264,9 @@ namespace Processor
         /// </summary>
         /// <param name="address"></param>
         /// <returns></returns>
-        public virtual byte ReadMemoryValueWithoutCycle(int address)
+        public byte ReadMemoryValueWithoutCycle(int address)
         {
-            var value = Memory[address];
+            var value = _memory[address];
             return value;
         }
 
@@ -276,10 +275,10 @@ namespace Processor
         /// </summary>
         /// <param name="address">The address to write data to</param>
         /// <param name="data">The data to write</param>
-        public virtual void WriteMemoryValue(int address, byte data)
+        public void WriteMemoryValue(int address, byte data)
         {
             IncrementCycleCount();
-            Memory[address] = data;
+            _memory[address] = data;
         }
 
         /// <summary>
@@ -294,10 +293,10 @@ namespace Processor
         /// <summary>
         /// Increments the Cycle Count, causes a CycleCountIncrementedAction to fire.
         /// </summary>
-        protected void IncrementCycleCount()
+        private void IncrementCycleCount()
         {
             _cycleCount++;
-            CycleCountIncrementedAction();
+            CycleCountIncrementedAction?.Invoke();
 
             _previousInterrupt = _interrupt;
             _interrupt = TriggerNmi || (TriggerIRQ && !DisableInterruptFlag);
@@ -317,11 +316,9 @@ namespace Processor
         /// <returns></returns>
         public byte[] DumpMemory()
         {
-            return Memory;
+            return _memory;
         }
-        #endregion
 
-        #region Private Methods
         /// <summary>
         /// Executes an Opcode
         /// </summary>
@@ -1404,7 +1401,7 @@ namespace Processor
         /// Sets the IsSignNegative register
         /// </summary>
         /// <param name="value"></param>
-        protected void SetNegativeFlag(int value)
+        private void SetNegativeFlag(int value)
         {
             //on the 6502, any value greater than 127 is negative. 128 = 1000000 in Binary. the 8th bit is set, therefore the number is a negative number.
             NegativeFlag = value > 127;
@@ -1414,7 +1411,7 @@ namespace Processor
         /// Sets the IsResultZero register
         /// </summary>
         /// <param name="value"></param>
-        protected void SetZeroFlag(int value)
+        private void SetZeroFlag(int value)
         {
             ZeroFlag = value == 0;
         }
@@ -1426,7 +1423,7 @@ namespace Processor
         /// </summary>
         /// <param name="addressingMode">The addressing Mode to use</param>
         /// <returns>The memory Location</returns>
-        protected int GetAddressByAddressingMode(AddressingMode addressingMode)
+        private int GetAddressByAddressingMode(AddressingMode addressingMode)
         {
             int address;
             int highByte;
@@ -1570,7 +1567,9 @@ namespace Processor
 
             //This makes sure that we always land on the correct spot for a positive number
             if (movement >= 0)
+            {
                 newProgramCounter++;
+            }
 
             //We Crossed a Page Boundary. So we increment the cycle counter by one. The +1 is because we always check from the end of the instruction not the beginning
             if (((ProgramCounter + 1 ^ newProgramCounter) & 0xff00) != 0x0000)
@@ -1590,7 +1589,7 @@ namespace Processor
         private byte PeekStack()
         {
             //The stack lives at 0x100-0x1FF, but the value is only a byte so it needs to be translated
-            return Memory[StackPointer + 0x100];
+            return _memory[StackPointer + 0x100];
         }
 
         /// <summary>
@@ -1600,7 +1599,7 @@ namespace Processor
         private void PokeStack(byte value)
         {
             //The stack lives at 0x100-0x1FF, but the value is only a byte so it needs to be translated
-            Memory[StackPointer + 0x100] = value;
+            _memory[StackPointer + 0x100] = value;
         }
 
         /// <summary>
@@ -1622,12 +1621,12 @@ namespace Processor
             var currentProgramCounter = ProgramCounter;
 
             currentProgramCounter = WrapProgramCounter(++currentProgramCounter);
-            int? address1 = Memory[currentProgramCounter];
+            int? address1 = _memory[currentProgramCounter];
 
             currentProgramCounter = WrapProgramCounter(++currentProgramCounter);
-            int? address2 = Memory[currentProgramCounter];
+            int? address2 = _memory[currentProgramCounter];
 
-            string disassembledStep = string.Empty;
+            var disassembledStep = string.Empty;
 
             switch (addressMode)
             {
@@ -1695,7 +1694,9 @@ namespace Processor
 
                         //This makes sure that we always land on the correct spot for a positive number
                         if (movement >= 0)
+                        {
                             newProgramCounter++;
+                        }
 
                         var stringAddress = ProgramCounter.ToString("X").PadLeft(4, '0');
 
@@ -1950,7 +1951,7 @@ namespace Processor
         /// The ADC - Add Memory to Accumulator with Carry Operation
         /// </summary>
         /// <param name="addressingMode">The addressing mode used to perform this operation.</param>
-        protected virtual void AddWithCarryOperation(AddressingMode addressingMode)
+        private void AddWithCarryOperation(AddressingMode addressingMode)
         {
             //Accumulator, Carry = Accumulator + ValueInMemoryLocation + Carry 
             var memoryValue = ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
@@ -2042,7 +2043,9 @@ namespace Processor
 
 
             if (addressingMode == AddressingMode.Accumulator)
+            {
                 Accumulator = value;
+            }
             else
             {
                 WriteMemoryValue(memoryAddress, (byte)value);
@@ -2093,7 +2096,9 @@ namespace Processor
             var comparedValue = comparisonValue - memoryValue;
 
             if (comparedValue < 0)
+            {
                 comparedValue += 0x10000;
+            }
 
             SetZeroFlag(comparedValue);
 
@@ -2114,9 +2119,13 @@ namespace Processor
             WriteMemoryValue(memoryLocation, memory);
 
             if (decrement)
+            {
                 memory -= 1;
+            }
             else
+            {
                 memory += 1;
+            }
 
             SetZeroFlag(memory);
             SetNegativeFlag(memory);
@@ -2135,23 +2144,35 @@ namespace Processor
             var value = useXRegister ? XRegister : YRegister;
 
             if (decrement)
+            {
                 value -= 1;
+            }
             else
+            {
                 value += 1;
+            }
 
             if (value < 0x00)
+            {
                 value += 0x100;
+            }
             else if (value > 0xFF)
+            {
                 value -= 0x100;
+            }
 
             SetZeroFlag(value);
             SetNegativeFlag(value);
             IncrementCycleCount();
 
             if (useXRegister)
+            {
                 XRegister = value;
+            }
             else
+            {
                 YRegister = value;
+            }
         }
 
         /// <summary>
@@ -2200,7 +2221,9 @@ namespace Processor
 
             SetZeroFlag(value);
             if (addressingMode == AddressingMode.Accumulator)
+            {
                 Accumulator = value;
+            }
             else
             {
                 WriteMemoryValue(memoryAddress, (byte)value);
@@ -2252,7 +2275,9 @@ namespace Processor
             value = (value << 1) & 0xFE;
 
             if (CarryFlag)
+            {
                 value |= 0x01;
+            }
 
             CarryFlag = newCarry;
 
@@ -2261,7 +2286,9 @@ namespace Processor
 
 
             if (addressingMode == AddressingMode.Accumulator)
+            {
                 Accumulator = value;
+            }
             else
             {
                 WriteMemoryValue(memoryAddress, (byte)value);
@@ -2301,7 +2328,9 @@ namespace Processor
 
             //If the carry flag is set then 0x
             if (CarryFlag)
+            {
                 value |= 0x80;
+            }
 
             CarryFlag = newCarry;
 
@@ -2309,7 +2338,9 @@ namespace Processor
             SetNegativeFlag(value);
 
             if (addressingMode == AddressingMode.Accumulator)
+            {
                 Accumulator = value;
+            }
             else
             {
                 WriteMemoryValue(memoryAddress, (byte)value);
@@ -2320,7 +2351,7 @@ namespace Processor
         /// The SBC operation. Performs a subtract with carry operation on the accumulator and a value in memory.
         /// </summary>
         /// <param name="addressingMode">The addressing mode to use</param>
-        protected virtual void SubtractWithBorrowOperation(AddressingMode addressingMode)
+        private void SubtractWithBorrowOperation(AddressingMode addressingMode)
         {
             var memoryValue = ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
             var newValue = DecimalFlag
@@ -2332,7 +2363,9 @@ namespace Processor
             if (DecimalFlag)
             {
                 if (newValue < 0)
+                {
                     newValue += 100;
+                }
 
                 newValue = (int)Convert.ToInt64(string.Concat("0x", newValue), 16);
             }
@@ -2341,7 +2374,9 @@ namespace Processor
                 OverflowFlag = (((Accumulator ^ newValue) & 0x80) != 0) && (((Accumulator ^ memoryValue) & 0x80) != 0);
 
                 if (newValue < 0)
+                {
                     newValue += 256;
+                }
             }
 
             SetNegativeFlag(newValue);
@@ -2435,9 +2470,13 @@ namespace Processor
 
             //We only set the Break Flag is a Break Occurs
             if (isBrk)
+            {
                 PokeStack((byte)(ConvertFlagsToByte(true) | 0x10));
+            }
             else
+            {
                 PokeStack(ConvertFlagsToByte(false));
+            }
 
             StackPointer--;
             IncrementCycleCount();
@@ -2492,7 +2531,9 @@ namespace Processor
         private void ProcessIRQ()
         {
             if (DisableInterruptFlag)
+            {
                 return;
+            }
 
             ProgramCounter--;
             BreakOperation(false, 0xFFFE);
@@ -2500,8 +2541,6 @@ namespace Processor
 
             SetDisassembly();
         }
-        #endregion
-
         #endregion
     }
 }
