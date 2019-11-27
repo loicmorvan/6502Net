@@ -16,21 +16,24 @@ namespace Processor
         private int _cycleCount;
         private bool _previousInterrupt;
         private bool _interrupt;
-        private readonly byte[] _memory;
+        private readonly byte[] _memory = new byte[0x10000];
 
         /// <summary>
         /// The Accumulator. This value is implemented as an integer intead of a byte.
         /// This is done so we can detect wrapping of the value and set the correct number of cycles.
         /// </summary>
         public int Accumulator { get; private set; }
+
         /// <summary>
         /// The X Index Register
         /// </summary>
         public int XRegister { get; private set; }
+
         /// <summary>
         /// The Y Index Register
         /// </summary>
         public int YRegister { get; private set; }
+
         /// <summary>
         /// The Current Op Code being executed by the system
         /// </summary>
@@ -39,7 +42,9 @@ namespace Processor
         /// <summary>
         /// The disassembly of the current operation. This value is only set when the CPU is built in debug mode.
         /// </summary>
+        // TODO: I don't like that.
         public Disassembly CurrentDisassembly { get; private set; }
+
         /// <summary>
         /// Points to the Current Address of the instruction being executed by the system. 
         /// The PC wraps when the value is greater than 65535, or less than 0. 
@@ -49,6 +54,7 @@ namespace Processor
             get => _programCounter;
             private set => _programCounter = WrapProgramCounter(value);
         }
+
         /// <summary>
         /// Points to the Current Position of the Stack.
         /// This value is a 00-FF value but is offset to point to the location in memory where the stack resides.
@@ -78,27 +84,30 @@ namespace Processor
         /// </summary>
         public Action CycleCountIncrementedAction { get; set; }
 
-        //Status Registers
         /// <summary>
         /// This is the carry flag. when adding, if the result is greater than 255 or 99 in BCD Mode, then this bit is enabled. 
         /// In subtraction this is reversed and set to false if a borrow is required IE the result is less than 0
         /// </summary>
         public bool CarryFlag { get; private set; }
+
         /// <summary>
         /// Is true if one of the registers is set to zero.
         /// </summary>
         public bool ZeroFlag { get; private set; }
+
         /// <summary>
         /// This determines if Interrupts are currently disabled.
         /// This flag is turned on during a reset to prevent an interrupt from occuring during startup/Initialization.
         /// If this flag is true, then the IRQ pin is ignored.
         /// </summary>
         public bool DisableInterruptFlag { get; private set; }
+
         /// <summary>
         /// Binary Coded Decimal Mode is set/cleared via this flag.
         /// when this mode is in effect, a byte represents a number from 0-99. 
         /// </summary>
         public bool DecimalFlag { get; private set; }
+
         /// <summary>
         /// This property is set when an overflow occurs. An overflow happens if the high bit(7) changes during the operation. Remember that values from 128-256 are negative values
         /// as the high bit is set to 1.
@@ -107,6 +116,7 @@ namespace Processor
         /// -128 + -128 = 0
         /// </summary>
         public bool OverflowFlag { get; private set; }
+
         /// <summary>
         /// Set to true if the result of an operation is negative in ADC and SBC operations. 
         /// Remember that 128-256 represent negative numbers when doing signed math.
@@ -123,14 +133,6 @@ namespace Processor
         public bool TriggerIRQ { get; private set; }
 
         /// <summary>
-        /// Default Constructor, Instantiates a new instance of the processor.
-        /// </summary>
-        public Processor()
-        {
-            _memory = new byte[0x10000];
-        }
-
-        /// <summary>
         /// Initializes the processor to its default state.
         /// </summary>
         public void Reset()
@@ -142,10 +144,11 @@ namespace Processor
             //Set the Program Counter to the Reset Vector Address.
             ProgramCounter = 0xFFFC;
             //Reset the Program Counter to the Address contained in the Reset Vector
-            ProgramCounter = (_memory[ProgramCounter] | (_memory[ProgramCounter + 1] << 8)); ;
+            ProgramCounter = (_memory[ProgramCounter] | (_memory[ProgramCounter + 1] << 8));
 
             CurrentOpCode = _memory[ProgramCounter];
 
+            // TODO: WTF???
             //SetDisassembly();
 
             DisableInterruptFlag = true;
@@ -1733,7 +1736,7 @@ namespace Processor
 
             }
 
-
+            // TODO: I reaaly don't like that.
             CurrentDisassembly = new Disassembly
             {
                 HighAddress = address2.HasValue ? address2.Value.ToString("X").PadLeft(2, '0') : string.Empty,
