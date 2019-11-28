@@ -79,11 +79,6 @@ namespace Processor
         }
 
         /// <summary>
-        /// An external action that occurs when the cycle count is incremented
-        /// </summary>
-        public Action CycleCountIncrementedAction { get; set; }
-
-        /// <summary>
         /// This is the carry flag. when adding, if the result is greater than 255 or 99 in BCD Mode, then this bit is enabled. 
         /// In subtraction this is reversed and set to false if a borrow is required IE the result is less than 0
         /// </summary>
@@ -298,7 +293,6 @@ namespace Processor
         private void IncrementCycleCount()
         {
             _cycleCount++;
-            CycleCountIncrementedAction?.Invoke();
 
             _previousInterrupt = _interrupt;
             _interrupt = TriggerNmi || (TriggerIRQ && !DisableInterruptFlag);
@@ -1753,9 +1747,8 @@ namespace Processor
             return value & 0xFFFF;
         }
 
-        
-
         #region Op Code Operations
+
         /// <summary>
         /// The ADC - Add Memory to Accumulator with Carry Operation
         /// </summary>
@@ -1765,7 +1758,6 @@ namespace Processor
             //Accumulator, Carry = Accumulator + ValueInMemoryLocation + Carry 
             var memoryValue = ReadMemoryValue(GetAddressByAddressingMode(addressingMode));
             var newValue = memoryValue + Accumulator + (CarryFlag ? 1 : 0);
-
 
             OverflowFlag = (((Accumulator ^ newValue) & 0x80) != 0) && (((Accumulator ^ memoryValue) & 0x80) == 0);
 
@@ -2208,14 +2200,13 @@ namespace Processor
         private void PullFlagsOperation()
         {
             var flags = PeekStack();
+
             CarryFlag = (flags & 0x01) != 0;
             ZeroFlag = (flags & 0x02) != 0;
             DisableInterruptFlag = (flags & 0x04) != 0;
             DecimalFlag = (flags & 0x08) != 0;
             OverflowFlag = (flags & 0x40) != 0;
             NegativeFlag = (flags & 0x80) != 0;
-
-
         }
 
         /// <summary>
@@ -2257,7 +2248,6 @@ namespace Processor
             ProgramCounter = (highBit | lowBit) + 1;
             IncrementCycleCount();
         }
-
 
         /// <summary>
         /// The BRK routine. Called when a BRK occurs.
@@ -2350,6 +2340,7 @@ namespace Processor
 
             SetDisassembly();
         }
+
         #endregion
     }
 }
