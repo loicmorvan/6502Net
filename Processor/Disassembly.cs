@@ -5,7 +5,6 @@ namespace Processor
 	/// <summary>
 	/// Used to help simulating. This class contains the disassembly properties.
 	/// </summary>
-	[Serializable]
 	public class Disassembly
 	{
 		/// <summary>

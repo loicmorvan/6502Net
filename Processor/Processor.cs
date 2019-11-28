@@ -8,7 +8,6 @@ namespace Processor
     /// <summary>
     /// An Implementation of a 6502 Processor
     /// </summary>
-    [Serializable]
     public sealed class Processor
     {
         private int _programCounter;
