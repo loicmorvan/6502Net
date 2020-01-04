@@ -1,8 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Dynamic;
-using System.Globalization;
 
 namespace Processor
 {
@@ -11,7 +7,6 @@ namespace Processor
     /// </summary>
     public sealed class Processor
     {
-        private int _programCounter;
         private int _stackPointer;
         private int _cycleCount;
         private bool _previousInterrupt;
@@ -56,10 +51,10 @@ namespace Processor
         /// Points to the Current Address of the instruction being executed by the system. 
         /// The PC wraps when the value is greater than 65535, or less than 0. 
         /// </summary>
-        public int ProgramCounter
+        public Address ProgramCounter
         {
-            get => _programCounter;
-            private set => _programCounter = WrapProgramCounter(value);
+            get;
+            private set;
         }
 
         /// <summary>
@@ -165,8 +160,6 @@ namespace Processor
         /// </summary>
         public void NextStep()
         {
-            SetDisassembly();
-
             //Have to read this first otherwise it causes tests to fail on a NES
             CurrentOpCode = (OpCode)ReadMemoryValue(ProgramCounter);
 
@@ -1556,141 +1549,6 @@ namespace Processor
                          (DecimalFlag ? 8 : 0) + (setBreak ? 0x10 : 0) + 0x20 + (OverflowFlag ? 0x40 : 0) + (NegativeFlag ? 0x80 : 0));
         }
 
-        [Conditional("DEBUG")]
-        private void SetDisassembly()
-        {
-            var addressMode = CurrentOpCode.GetAddressingMode();
-
-            var currentProgramCounter = ProgramCounter;
-
-            currentProgramCounter = WrapProgramCounter(++currentProgramCounter);
-            int? address1 = _memory[currentProgramCounter];
-
-            currentProgramCounter = WrapProgramCounter(++currentProgramCounter);
-            int? address2 = _memory[currentProgramCounter];
-
-            var disassembledStep = string.Empty;
-
-            switch (addressMode)
-            {
-                case AddressingMode.Absolute:
-                    {
-                        disassembledStep = string.Format("${0}{1}", address2.Value.ToString("X").PadLeft(2, '0'), address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.AbsoluteX:
-                    {
-                        disassembledStep = string.Format("${0}{1},X", address2.Value.ToString("X").PadLeft(2, '0'), address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.AbsoluteY:
-                    {
-                        disassembledStep = string.Format("${0}{1},Y", address2.Value.ToString("X").PadLeft(2, '0'), address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.Accumulator:
-                    {
-                        address1 = null;
-                        address2 = null;
-
-                        disassembledStep = "A";
-                        break;
-                    }
-                case AddressingMode.Immediate:
-                    {
-                        disassembledStep = string.Format("#${0}", address1.Value.ToString("X").PadLeft(4, '0'));
-                        address2 = null;
-                        break;
-                    }
-                case AddressingMode.Implied:
-                    {
-                        address1 = null;
-                        address2 = null;
-                        break;
-                    }
-                case AddressingMode.Indirect:
-                    {
-                        disassembledStep = string.Format("(${0}{1})", address2.Value.ToString("X").PadLeft(2, '0'), address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.IndirectX:
-                    {
-                        address2 = null;
-
-                        disassembledStep = string.Format("(${0},X)", address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.IndirectY:
-                    {
-                        address2 = null;
-
-                        disassembledStep = string.Format("(${0}),Y", address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.Relative:
-                    {
-                        var valueToMove = (byte)address1.Value;
-
-                        var movement = valueToMove > 127 ? (valueToMove - 255) : valueToMove;
-
-                        var newProgramCounter = ProgramCounter + movement;
-
-                        //This makes sure that we always land on the correct spot for a positive number
-                        if (movement >= 0)
-                        {
-                            newProgramCounter++;
-                        }
-
-                        var stringAddress = ProgramCounter.ToString("X").PadLeft(4, '0');
-
-                        address1 = int.Parse(stringAddress.Substring(0, 2), NumberStyles.AllowHexSpecifier);
-                        address2 = int.Parse(stringAddress.Substring(2, 2), NumberStyles.AllowHexSpecifier);
-
-                        disassembledStep = string.Format("${0}", newProgramCounter.ToString("X").PadLeft(4, '0'));
-
-                        break;
-                    }
-                case AddressingMode.ZeroPage:
-                    {
-                        address2 = null;
-
-                        disassembledStep = string.Format("${0}", address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.ZeroPageX:
-                    {
-                        address2 = null;
-
-                        disassembledStep = string.Format("${0},X", address1.Value.ToString("X").PadLeft(2, '0'));
-                        break;
-                    }
-                case AddressingMode.ZeroPageY:
-                    {
-                        address2 = null;
-
-                        disassembledStep = string.Format("${0},Y", address1.Value.ToString("X").PadLeft(4, '0'));
-                        break;
-                    }
-                default:
-                    throw new InvalidEnumArgumentException("Invalid Addressing Mode");
-
-            }
-
-            // TODO: I reaaly don't like that.
-            CurrentDisassembly = new Disassembly
-            {
-                HighAddress = address2.HasValue ? address2.Value.ToString("X").PadLeft(2, '0') : string.Empty,
-                LowAddress = address1.HasValue ? address1.Value.ToString("X").PadLeft(2, '0') : string.Empty,
-                OpCodeString = CurrentOpCode.ToString(),
-                DisassemblyOutput = disassembledStep
-            };
-        }
-
-        private int WrapProgramCounter(int value)
-        {
-            return value & 0xFFFF;
-        }
-
         #region Op Code Operations
 
         /// <summary>
@@ -2264,8 +2122,6 @@ namespace Processor
             ProgramCounter--;
             BreakOperation(false, 0xFFFA);
             CurrentOpCode = (OpCode)ReadMemoryValue(ProgramCounter);
-
-            SetDisassembly();
         }
 
         /// <summary>
@@ -2281,8 +2137,6 @@ namespace Processor
             ProgramCounter--;
             BreakOperation(false, 0xFFFE);
             CurrentOpCode = (OpCode)ReadMemoryValue(ProgramCounter);
-
-            SetDisassembly();
         }
 
         #endregion

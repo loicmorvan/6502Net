@@ -2,6 +2,6 @@
 {
     public interface IMemory
     {
-        byte this[int address] { get; set; }
+        byte this[in Address address] { get; set; }
     }
 }

@@ -14,6 +14,6 @@
 
         public int CycleCount { get; set; }
 
-        public int ProgramCounter { get; set; }
+        public Address ProgramCounter { get; set; }
     }
 }

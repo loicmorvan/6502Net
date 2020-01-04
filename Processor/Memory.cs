@@ -5,23 +5,22 @@ namespace Processor
     public class Memory : IMemory
     {
         private readonly byte[] _memory;
+        private const int _maxCapacity = ushort.MaxValue + 1;
 
         public Memory()
         {
-            _memory = new byte[Capacity];
+            _memory = new byte[_maxCapacity];
         }
 
-        public byte this[int address]
+        public byte this[in Address address]
         {
             get => _memory[address];
             set => _memory[address] = value;
         }
 
-        public const int Capacity = 0x10000;
-
         public void Clear()
         {
-            for (var i = 0; i < Capacity; i++)
+            for (var i = 0; i < _maxCapacity; i++)
             {
                 _memory[i] = 0x00;
             }
@@ -33,30 +32,23 @@ namespace Processor
         /// <param name="offset">The offset in memory when loading the program.</param>
         /// <param name="program">The program to be loaded</param>
         /// <param name="initialProgramCounter">The initial PC value, this is the entry point of the program</param>
-        public static IMemory LoadProgram(int offset, byte[] program, int initialProgramCounter)
+        public static IMemory LoadProgram(Address offset, byte[] program, Address initialProgramCounter)
         {
-            if (offset > Capacity)
+            if (offset + program.Length > _maxCapacity)
             {
-                throw new InvalidOperationException("Offset '{0}' is larger than memory size '{1}'");
-            }
-
-            if (program.Length > Capacity + offset)
-            {
-                throw new InvalidOperationException(string.Format("Program Size '{0}' Cannot be Larger than Memory Size '{1}' plus offset '{2}'", program.Length, Capacity, offset));
+                throw new ArgumentOutOfRangeException();
             }
 
             var memory = new Memory();
 
             for (var i = 0; i < program.Length; i++)
             {
-                memory[i + offset] = program[i];
+                memory[(ushort)(i + offset)] = program[i];
             }
 
-            var bytes = BitConverter.GetBytes(initialProgramCounter);
-
             //Write the initialProgram Counter to the reset vector
-            memory[0xFFFC] = bytes[0];
-            memory[0xFFFD] = bytes[1];
+            memory[0xFFFC] = initialProgramCounter.GetLowBits();
+            memory[0xFFFD] = initialProgramCounter.GetHighBits();
 
             return memory;
         }
