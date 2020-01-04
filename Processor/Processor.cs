@@ -15,7 +15,12 @@ namespace Processor
         private int _cycleCount;
         private bool _previousInterrupt;
         private bool _interrupt;
-        private readonly byte[] _memory = new byte[0x10000];
+        private readonly Memory _memory;
+
+        public Processor(Memory memory)
+        {
+            _memory = memory;
+        }
 
         /// <summary>
         /// The Accumulator. This value is implemented as an integer intead of a byte.
@@ -142,9 +147,6 @@ namespace Processor
 
             CurrentOpCode = (OpCode)_memory[ProgramCounter];
 
-            // TODO: WTF???
-            //SetDisassembly();
-
             DisableInterruptFlag = true;
             _previousInterrupt = false;
             TriggerNmi = false;
@@ -207,14 +209,14 @@ namespace Processor
         /// <param name="program">The program to be loaded</param>
         public void LoadProgram(int offset, byte[] program)
         {
-            if (offset > _memory.Length)
+            if (offset > _memory.Capacity)
             {
                 throw new InvalidOperationException("Offset '{0}' is larger than memory size '{1}'");
             }
 
-            if (program.Length > _memory.Length + offset)
+            if (program.Length > _memory.Capacity + offset)
             {
-                throw new InvalidOperationException(string.Format("Program Size '{0}' Cannot be Larger than Memory Size '{1}' plus offset '{2}'", program.Length, _memory.Length, offset));
+                throw new InvalidOperationException(string.Format("Program Size '{0}' Cannot be Larger than Memory Size '{1}' plus offset '{2}'", program.Length, _memory.Capacity, offset));
             }
 
             for (var i = 0; i < program.Length; i++)
@@ -238,7 +240,7 @@ namespace Processor
         /// </summary>
         public void ClearMemory()
         {
-            for (var i = 0; i < _memory.Length; i++)
+            for (var i = 0; i < _memory.Capacity; i++)
             {
                 _memory[i] = 0x00;
             }
@@ -304,15 +306,6 @@ namespace Processor
 	    public void ResetCycleCount()
         {
             _cycleCount = 0;
-        }
-
-        /// <summary>
-        /// Dumps the entire memory object. Used when saving the memory state
-        /// </summary>
-        /// <returns></returns>
-        public byte[] DumpMemory()
-        {
-            return _memory;
         }
 
         /// <summary>

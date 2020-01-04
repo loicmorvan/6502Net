@@ -71,7 +71,7 @@ namespace Processor.UnitTests
         public void Klaus_Dorman_Functional_Test(int accumulator, int programCounter)
         // ReSharper restore InconsistentNaming
         {
-            var processor = new Processor();
+            var processor = new Processor(new Memory());
             processor.LoadProgram(0x400, KdTestProgram, 0x400);
             var numberOfCycles = 0;
 
@@ -108,7 +108,7 @@ namespace Processor.UnitTests
             var previousInterruptWatchValue = 0;
             //var previousInterruptDisableCleared = false;
 
-            var processor = new Processor();
+            var processor = new Processor(new Memory());
             processor.LoadProgram(0x400, InterruptProgram, 0x400);
             var numberOfCycles = 0;
 
@@ -143,7 +143,7 @@ namespace Processor.UnitTests
         [Test]
         public void Cycle_Test()
         {
-            var processor = new Processor();
+            var processor = new Processor(new Memory());
             processor.LoadProgram(0x000, CycleProgram, 0x00);
             var numberofLoops = 1;
 
