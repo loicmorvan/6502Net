@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Globalization;
 
 namespace Processor
@@ -15,11 +16,13 @@ namespace Processor
         private int _cycleCount;
         private bool _previousInterrupt;
         private bool _interrupt;
-        private readonly Memory _memory;
+        private readonly IMemory _memory;
 
-        public Processor(Memory memory)
+        public Processor(IMemory memory)
         {
             _memory = memory;
+
+            InitializeStackPointerAndProgramCounter();
         }
 
         /// <summary>
@@ -137,7 +140,16 @@ namespace Processor
         public void Reset()
         {
             ResetCycleCount();
+            InitializeStackPointerAndProgramCounter();
 
+            DisableInterruptFlag = true;
+            _previousInterrupt = false;
+            TriggerNmi = false;
+            TriggerIRQ = false;
+        }
+
+        private void InitializeStackPointerAndProgramCounter()
+        {
             StackPointer = 0x1FD;
 
             //Set the Program Counter to the Reset Vector Address.
@@ -146,11 +158,6 @@ namespace Processor
             ProgramCounter = (_memory[ProgramCounter] | (_memory[ProgramCounter + 1] << 8));
 
             CurrentOpCode = (OpCode)_memory[ProgramCounter];
-
-            DisableInterruptFlag = true;
-            _previousInterrupt = false;
-            TriggerNmi = false;
-            TriggerIRQ = false;
         }
 
         /// <summary>
@@ -188,17 +195,6 @@ namespace Processor
         public void InterruptRequest()
         {
             TriggerIRQ = true;
-        }
-
-        /// <summary>
-        /// Clears the memory
-        /// </summary>
-        public void ClearMemory()
-        {
-            for (var i = 0; i < _memory.Capacity; i++)
-            {
-                _memory[i] = 0x00;
-            }
         }
 
         /// <summary>

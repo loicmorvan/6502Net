@@ -37,9 +37,8 @@ namespace Processor.UnitTests
         public void ProgramCounter_Correct_When_Program_Loaded()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-            memory.LoadProgram(0, new byte[1], 0x01);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[1], 0x01));
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0x01));
         }
 
@@ -47,9 +46,8 @@ namespace Processor.UnitTests
         public void Throws_Exception_When_OpCode_Is_Invalid()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-            memory.LoadProgram(0x00, new byte[] { 0xFF }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0x00, new byte[] { 0xFF }, 0x00));
+            
             Assert.Throws<NotSupportedException>(() => processor.NextStep());
         }
 
@@ -58,7 +56,7 @@ namespace Processor.UnitTests
         {
             var memory = new Memory();
             var processor = new Processor(memory);
-            processor.Reset();
+            
 
             Assert.That(processor.StackPointer, Is.EqualTo(0xFD));
         }
@@ -80,20 +78,16 @@ namespace Processor.UnitTests
         [TestCase(255, 255, true, 255)]
         public void ADC_Accumulator_Correct_When_Not_In_BDC_Mode(byte accumlatorIntialValue, byte amountToAdd, bool CarryFlagSet, byte expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
+            var processor = new Processor(
+                CarryFlagSet ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00));
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (CarryFlagSet)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -109,20 +103,16 @@ namespace Processor.UnitTests
         public void ADC_Accumulator_Correct_When_In_BDC_Mode(byte accumlatorIntialValue, byte amountToAdd,
                                                                        bool setCarryFlag, byte expectedValue)
         {
-            var memory = new Memory();
+            var memory = setCarryFlag ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xF8, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (setCarryFlag)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xF8, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -141,20 +131,17 @@ namespace Processor.UnitTests
         public void ADC_Carry_Correct_When_Not_In_BDC_Mode(byte accumlatorIntialValue, byte amountToAdd, bool setCarryFlag,
                                                                      bool expectedValue)
         {
-            var memory = new Memory();
+            var memory =
+                setCarryFlag ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (setCarryFlag)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -172,12 +159,10 @@ namespace Processor.UnitTests
         public void ADC_Carry_Correct_When_In_BDC_Mode(byte accumlatorIntialValue, byte amountToAdd, bool setCarryFlag,
                                                                      bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-            memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-            processor.Reset();
 
             processor.NextStep();
             processor.NextStep();
@@ -193,12 +178,10 @@ namespace Processor.UnitTests
         [TestCase(1, 0, false)]
         public void ADC_Zero_Flag_Correct_When_Not_In_BDC_Mode(byte accumlatorIntialValue, byte amountToAdd, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-            processor.Reset();
 
             processor.NextStep();
             Assert.That(processor.Accumulator, Is.EqualTo(accumlatorIntialValue));
@@ -217,13 +200,11 @@ namespace Processor.UnitTests
         [TestCase(255, 1, false)]
         public void ADC_Negative_Flag_Correct(byte accumlatorIntialValue, byte amountToAdd, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
+
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-            processor.Reset();
 
             processor.NextStep();
             Assert.That(processor.Accumulator, Is.EqualTo(accumlatorIntialValue));
@@ -264,20 +245,16 @@ namespace Processor.UnitTests
         [TestCase(255, 255, true, false)]
         public void ADC_Overflow_Flag_Correct(byte accumlatorIntialValue, byte amountToAdd, bool setCarryFlag, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = setCarryFlag ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (setCarryFlag)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x69, amountToAdd }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -296,10 +273,8 @@ namespace Processor.UnitTests
         public void AND_Accumulator_Correct(byte accumlatorIntialValue, byte amountToAnd, byte expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x29, amountToAnd }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x29, amountToAnd }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -317,12 +292,11 @@ namespace Processor.UnitTests
         [TestCase(0x1E, 109, 218, 0x01)] // ASL Absolute X
         public void ASL_Correct_Value_Stored(byte operation, byte valueToShift, byte expectedValue, byte expectedLocation)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, operation, expectedLocation }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, operation, expectedLocation }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -338,12 +312,11 @@ namespace Processor.UnitTests
         [TestCase(0, false)]
         public void ASL_Carry_Set_Correctly(byte valueToShift, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, 0x0A }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, 0x0A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -357,12 +330,11 @@ namespace Processor.UnitTests
         [TestCase(0, false)]
         public void ASL_Negative_Set_Correctly(byte valueToShift, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, 0x0A }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, 0x0A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -374,12 +346,9 @@ namespace Processor.UnitTests
         [TestCase(0, true)]
         public void ASL_Zero_Set_Correctly(byte valueToShift, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, 0x0A }, 0x00);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, 0x0A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -395,12 +364,9 @@ namespace Processor.UnitTests
         [TestCase(0x7D, 0x80, 0xFFFF)]
         public void BCC_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0x90, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0x90, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
 
             Assert.That(processor.ProgramCounter, Is.EqualTo(expectedValue));
@@ -414,12 +380,9 @@ namespace Processor.UnitTests
         [TestCase(0x7C, 0x80, 0xFFFF)]
         public void BCS_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0x38, 0xB0, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0x38, 0xB0, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -435,12 +398,9 @@ namespace Processor.UnitTests
         [TestCase(2, 0xFE, 4)]
         public void BEQ_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x00, 0xF0, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x00, 0xF0, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -463,12 +423,11 @@ namespace Processor.UnitTests
         [TestCase(0x2C, 0xFF, 0x80, true)] // BIT Absolute
         public void BIT_Negative_Set_When_Comparison_Is_Negative_Number(byte operation, byte accumulatorValue, byte valueToTest, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0x00, new byte[] { 0xA9, accumulatorValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0x00, new byte[] { 0xA9, accumulatorValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -509,12 +468,11 @@ namespace Processor.UnitTests
         [TestCase(0x2C, 0x7F, 0xC0, true)] // BIT Absolute
         public void BIT_Overflow_Set_By_Bit_Six(byte operation, byte accumulatorValue, byte valueToTest, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0x00, new byte[] { 0xA9, accumulatorValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0x00, new byte[] { 0xA9, accumulatorValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -531,12 +489,11 @@ namespace Processor.UnitTests
         [TestCase(0x2C, 0x55, 0xAA, true)] // BIT Absolute
         public void BIT_Zero_Set_When_Comparison_Is_Zero(byte operation, byte accumulatorValue, byte valueToTest, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0x00, new byte[] { 0xA9, accumulatorValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0x00, new byte[] { 0xA9, accumulatorValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -551,12 +508,9 @@ namespace Processor.UnitTests
         [TestCase(0x7B, 0x80, 0xFFFF)]
         public void BMI_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x80, 0x30, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x80, 0x30, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -572,12 +526,9 @@ namespace Processor.UnitTests
         [TestCase(0x7B, 0x80, 0xFFFF)]
         public void BNE_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x01, 0xD0, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x01, 0xD0, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -593,12 +544,9 @@ namespace Processor.UnitTests
         [TestCase(0x7B, 0x80, 0xFFFF)]
         public void BPL_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x79, 0x10, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x79, 0x10, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -612,10 +560,8 @@ namespace Processor.UnitTests
         public void BRK_Program_Counter_Set_To_Address_At_Break_Vector_Address()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x00 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x00 }, 0x00));
+            
 
             //Manually Write the Break Address
             processor.WriteMemoryValue(0xFFFE, 0xBC);
@@ -630,10 +576,8 @@ namespace Processor.UnitTests
         public void BRK_Program_Counter_Stack_Correct()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0xABCD, new byte[] { 0x00 }, 0xABCD);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0xABCD, new byte[] { 0x00 }, 0xABCD));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -646,10 +590,8 @@ namespace Processor.UnitTests
         public void BRK_Stack_Pointer_Correct()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0xABCD, new byte[] { 0x00 }, 0xABCD);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0xABCD, new byte[] { 0x00 }, 0xABCD));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -663,10 +605,8 @@ namespace Processor.UnitTests
         public void BRK_Stack_Set_Flag_Operations_Correctly(byte operation, byte expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x58, operation, 0x00 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x58, operation, 0x00 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -683,10 +623,8 @@ namespace Processor.UnitTests
         public void BRK_Stack_Non_Set_Flag_Operations_Correctly(byte accumulatorValue, byte memoryValue, byte expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x58, 0xA9, accumulatorValue, 0x69, memoryValue, 0x00 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x58, 0xA9, accumulatorValue, 0x69, memoryValue, 0x00 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -708,12 +646,9 @@ namespace Processor.UnitTests
         [TestCase(0x7D, 0x80, 0xFFFF)]
         public void BVC_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0x50, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0x50, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
 
             Assert.That(processor.ProgramCounter, Is.EqualTo(expectedValue));
@@ -727,12 +662,9 @@ namespace Processor.UnitTests
         [TestCase(0x79, 0x80, 0xFFFF)]
         public void BVS_Program_Counter_Correct(int programCounterInitalValue, byte offset, int expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x01, 0x69, 0x7F, 0x70, offset }, programCounterInitalValue);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(programCounterInitalValue, new byte[] { 0xA9, 0x01, 0x69, 0x7F, 0x70, offset }, programCounterInitalValue);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -747,10 +679,8 @@ namespace Processor.UnitTests
         public void CLC_Carry_Flag_Cleared_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x18 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x18 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.CarryFlag, Is.EqualTo(false));
@@ -764,10 +694,8 @@ namespace Processor.UnitTests
         public void CLD_Carry_Flag_Set_And_Cleared_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xF8, 0xD8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xF8, 0xD8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -782,10 +710,8 @@ namespace Processor.UnitTests
         public void CLI_Interrup_Flag_Cleared_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x58 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x58 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.DisableInterruptFlag, Is.EqualTo(false));
@@ -799,10 +725,8 @@ namespace Processor.UnitTests
         public void CLV_Overflow_Flag_Cleared_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xB8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xB8 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.OverflowFlag, Is.EqualTo(false));
@@ -819,10 +743,8 @@ namespace Processor.UnitTests
         public void CMP_Zero_Flag_Set_When_Values_Match(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0xC9, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0xC9, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -838,10 +760,8 @@ namespace Processor.UnitTests
         public void CMP_Carry_Flag_Set_When_Accumulator_Is_Greater_Than_Or_Equal(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0xC9, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0xC9, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -856,10 +776,8 @@ namespace Processor.UnitTests
         public void CMP_Negative_Flag_Set_When_Result_Is_Negative(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0xC9, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0xC9, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -876,10 +794,8 @@ namespace Processor.UnitTests
         public void CPX_Zero_Flag_Set_When_Values_Match(byte xValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, xValue, 0xE0, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, xValue, 0xE0, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -894,10 +810,8 @@ namespace Processor.UnitTests
         public void CPX_Carry_Flag_Set_When_Accumulator_Is_Greater_Than_Or_Equal(byte xValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, xValue, 0xE0, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, xValue, 0xE0, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -912,10 +826,8 @@ namespace Processor.UnitTests
         public void CPX_Negative_Flag_Set_When_Result_Is_Negative(byte xValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, xValue, 0xE0, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, xValue, 0xE0, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -931,10 +843,8 @@ namespace Processor.UnitTests
         public void CPY_Zero_Flag_Set_When_Values_Match(byte xValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, xValue, 0xC0, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, xValue, 0xC0, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -949,10 +859,8 @@ namespace Processor.UnitTests
         public void CPY_Carry_Flag_Set_When_Accumulator_Is_Greater_Than_Or_Equal(byte xValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, xValue, 0xC0, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, xValue, 0xC0, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -967,10 +875,8 @@ namespace Processor.UnitTests
         public void CPY_Negative_Flag_Set_When_Result_Is_Negative(byte xValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, xValue, 0xC0, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, xValue, 0xC0, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -985,10 +891,8 @@ namespace Processor.UnitTests
         public void DEC_Memory_Has_Correct_Value(byte initalMemoryValue, byte expectedMemoryValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xC6, 0x03, 0x00, initalMemoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xC6, 0x03, 0x00, initalMemoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ReadMemoryValue(0x03), Is.EqualTo(expectedMemoryValue));
@@ -1000,10 +904,8 @@ namespace Processor.UnitTests
         public void DEC_Zero_Has_Correct_Value(byte initalMemoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xC6, 0x03, 0x00, initalMemoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xC6, 0x03, 0x00, initalMemoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ZeroFlag, Is.EqualTo(expectedResult));
@@ -1015,10 +917,8 @@ namespace Processor.UnitTests
         public void DEC_Negative_Has_Correct_Value(byte initalMemoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xC6, 0x03, 0x00, initalMemoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xC6, 0x03, 0x00, initalMemoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.NegativeFlag, Is.EqualTo(expectedResult));
@@ -1032,10 +932,8 @@ namespace Processor.UnitTests
         public void DEX_XRegister_Has_Correct_Value(byte initialXRegisterValue, byte expectedMemoryValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, initialXRegisterValue, 0xCA }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, initialXRegisterValue, 0xCA }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1048,10 +946,8 @@ namespace Processor.UnitTests
         public void DEX_Zero_Has_Correct_Value(byte initialXRegisterValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, initialXRegisterValue, 0xCA }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, initialXRegisterValue, 0xCA }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1064,10 +960,8 @@ namespace Processor.UnitTests
         public void DEX_Negative_Has_Correct_Value(byte initialXRegisterValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, initialXRegisterValue, 0xCA }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, initialXRegisterValue, 0xCA }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1082,10 +976,8 @@ namespace Processor.UnitTests
         public void DEY_YRegister_Has_Correct_Value(byte initialYRegisterValue, byte expectedMemoryValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, initialYRegisterValue, 0x88 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, initialYRegisterValue, 0x88 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1098,10 +990,8 @@ namespace Processor.UnitTests
         public void DEY_Zero_Has_Correct_Value(byte initialYRegisterValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, initialYRegisterValue, 0x88 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, initialYRegisterValue, 0x88 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1114,10 +1004,8 @@ namespace Processor.UnitTests
         public void DEY_Negative_Has_Correct_Value(byte initialYRegisterValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, initialYRegisterValue, 0x88 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, initialYRegisterValue, 0x88 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1135,10 +1023,8 @@ namespace Processor.UnitTests
         public void EOR_Accumulator_Correct(byte accumulatorValue, byte memoryValue, byte expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x49, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x49, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1152,10 +1038,8 @@ namespace Processor.UnitTests
         public void EOR_Negative_Flag_Correct(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x49, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x49, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1167,10 +1051,8 @@ namespace Processor.UnitTests
         public void EOR_Zero_Flag_Correct(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x49, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x49, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1186,10 +1068,8 @@ namespace Processor.UnitTests
         public void INC_Memory_Has_Correct_Value(byte initalMemoryValue, byte expectedMemoryValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xE6, 0x03, 0x00, initalMemoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xE6, 0x03, 0x00, initalMemoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ReadMemoryValue(0x03), Is.EqualTo(expectedMemoryValue));
@@ -1201,10 +1081,8 @@ namespace Processor.UnitTests
         public void INC_Zero_Has_Correct_Value(byte initalMemoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xE6, 0x03, 0x00, initalMemoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xE6, 0x03, 0x00, initalMemoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ZeroFlag, Is.EqualTo(expectedResult));
@@ -1216,10 +1094,8 @@ namespace Processor.UnitTests
         public void INC_Negative_Has_Correct_Value(byte initalMemoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xE6, 0x02, initalMemoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xE6, 0x02, initalMemoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.NegativeFlag, Is.EqualTo(expectedResult));
@@ -1233,10 +1109,8 @@ namespace Processor.UnitTests
         public void INX_XRegister_Has_Correct_Value(byte initialXRegister, byte expectedMemoryValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, initialXRegister, 0xE8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, initialXRegister, 0xE8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1249,10 +1123,8 @@ namespace Processor.UnitTests
         public void INX_Zero_Has_Correct_Value(byte initialXRegister, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, initialXRegister, 0xE8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, initialXRegister, 0xE8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1265,10 +1137,8 @@ namespace Processor.UnitTests
         public void INX_Negative_Has_Correct_Value(byte initialXRegister, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, initialXRegister, 0xE8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, initialXRegister, 0xE8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1283,10 +1153,8 @@ namespace Processor.UnitTests
         public void INY_YRegisgter_Has_Correct_Value(byte initialYRegister, byte expectedMemoryValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, initialYRegister, 0xC8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, initialYRegister, 0xC8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1299,10 +1167,8 @@ namespace Processor.UnitTests
         public void INY_Zero_Has_Correct_Value(byte initialYRegister, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, initialYRegister, 0xC8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, initialYRegister, 0xC8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1315,10 +1181,8 @@ namespace Processor.UnitTests
         public void INY_Negative_Has_Correct_Value(byte initialYRegister, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, initialYRegister, 0xC8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, initialYRegister, 0xC8 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1333,10 +1197,8 @@ namespace Processor.UnitTests
         public void JMP_Program_Counter_Set_Correctly_After_Jump()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x4C, 0x08, 0x00 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x4C, 0x08, 0x00 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ProgramCounter, Is.EqualTo(0x08));
@@ -1346,10 +1208,8 @@ namespace Processor.UnitTests
         public void JMP_Program_Counter_Set_Correctly_After_Indirect_Jump()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x6C, 0x03, 0x00, 0x08, 0x00 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x6C, 0x03, 0x00, 0x08, 0x00 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ProgramCounter, Is.EqualTo(0x08));
@@ -1358,11 +1218,10 @@ namespace Processor.UnitTests
         [Test]
         public void JMP_Indirect_Wraps_Correct_If_MSB_IS_FF()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0x6C, 0xFF, 0x01, 0x08, 0x00 }, 0x00);
             var processor = new Processor(memory);
             processor.WriteMemoryValue(0x01FE, 0x6C);
-            memory.LoadProgram(0, new byte[] { 0x6C, 0xFF, 0x01, 0x08, 0x00 }, 0x00);
-            processor.Reset();
+            
 
             processor.WriteMemoryValue(0x01FF, 0x03);
             processor.WriteMemoryValue(0x0100, 0x02);
@@ -1378,11 +1237,9 @@ namespace Processor.UnitTests
         [Test]
         public void JSR_Stack_Loads_Correct_Value()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0xBBAA, new byte[] { 0x20, 0xCC, 0xCC }, 0xBBAA);
             var processor = new Processor(memory);
-
-            memory.LoadProgram(0xBBAA, new byte[] { 0x20, 0xCC, 0xCC }, 0xBBAA);
-            processor.Reset();
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -1396,10 +1253,8 @@ namespace Processor.UnitTests
         public void JSR_Program_Counter_Correct()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0xBBAA, new byte[] { 0x20, 0xCC, 0xCC }, 0xBBAA);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0xBBAA, new byte[] { 0x20, 0xCC, 0xCC }, 0xBBAA));
+            
             processor.NextStep();
 
 
@@ -1411,10 +1266,8 @@ namespace Processor.UnitTests
         public void JSR_Stack_Pointer_Correct()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0xBBAA, new byte[] { 0x20, 0xCC, 0xCC }, 0xBBAA);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0xBBAA, new byte[] { 0x20, 0xCC, 0xCC }, 0xBBAA));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -1430,10 +1283,8 @@ namespace Processor.UnitTests
         public void LDA_Accumulator_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x03 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, 0x03 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.Accumulator, Is.EqualTo(0x03));
@@ -1444,10 +1295,8 @@ namespace Processor.UnitTests
         public void LDA_Zero_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ZeroFlag, Is.EqualTo(expectedValue));
@@ -1460,10 +1309,8 @@ namespace Processor.UnitTests
         public void LDA_Negative_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.NegativeFlag, Is.EqualTo(expectedValue));
@@ -1477,10 +1324,8 @@ namespace Processor.UnitTests
         public void LDX_XRegister_Value_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, 0x03 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, 0x03 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.XRegister, Is.EqualTo(0x03));
@@ -1493,10 +1338,8 @@ namespace Processor.UnitTests
         public void LDX_Negative_Flag_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.NegativeFlag, Is.EqualTo(expectedValue));
@@ -1507,10 +1350,8 @@ namespace Processor.UnitTests
         public void LDX_Zero_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ZeroFlag, Is.EqualTo(expectedValue));
@@ -1524,10 +1365,8 @@ namespace Processor.UnitTests
         public void STY_YRegister_Value_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, 0x03 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, 0x03 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.YRegister, Is.EqualTo(0x03));
@@ -1540,10 +1379,8 @@ namespace Processor.UnitTests
         public void LDY_Negative_Flag_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, valueToLoad }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, valueToLoad }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.NegativeFlag, Is.EqualTo(expectedValue));
@@ -1554,10 +1391,8 @@ namespace Processor.UnitTests
         public void LDY_Zero_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, valueToLoad }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, valueToLoad }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ZeroFlag, Is.EqualTo(expectedValue));
@@ -1573,13 +1408,11 @@ namespace Processor.UnitTests
         [TestCase(0x00, true, false)]
         public void LSR_Negative_Set_Correctly(byte accumulatorValue, bool carryBitSet, bool expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var carryOperation = carryBitSet ? 0x38 : 0x18;
+            var memory = Memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0xA9, accumulatorValue, 0x4A }, 0x00);
+            var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0xA9, accumulatorValue, 0x4A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1592,10 +1425,8 @@ namespace Processor.UnitTests
         public void LSR_Zero_Set_Correctly(byte accumulatorValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x4A }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x4A }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1607,10 +1438,8 @@ namespace Processor.UnitTests
         public void LSR_Carry_Flag_Set_Correctly(byte accumulatorValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x4A }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x4A }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1625,12 +1454,11 @@ namespace Processor.UnitTests
         [TestCase(0x5E, 0xFF, 0x7F, 0x01)] // LSR Absolute X
         public void LSR_Correct_Value_Stored(byte operation, byte valueToShift, byte expectedValue, byte expectedLocation)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, operation, expectedLocation }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToShift, operation, expectedLocation }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -1650,10 +1478,8 @@ namespace Processor.UnitTests
         public void ORA_Accumulator_Correct(byte accumulatorValue, byte memoryValue, byte expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x09, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x09, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1666,10 +1492,8 @@ namespace Processor.UnitTests
         public void ORA_Zero_Flag_Correct(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x09, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x09, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1682,10 +1506,8 @@ namespace Processor.UnitTests
         public void ORA_Negative_Flag_Correct(byte accumulatorValue, byte memoryValue, bool expectedResult)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x09, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x09, memoryValue }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1699,10 +1521,8 @@ namespace Processor.UnitTests
         public void PHA_Stack_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x48 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x48 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
 
@@ -1717,10 +1537,8 @@ namespace Processor.UnitTests
         public void PHA_Stack_Pointer_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x48 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x48 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -1734,10 +1552,8 @@ namespace Processor.UnitTests
         public void PHA_Stack_Pointer_Has_Correct_Value_When_Wrapping()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x9A, 0x48 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x9A, 0x48 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -1753,10 +1569,8 @@ namespace Processor.UnitTests
         public void PHP_Stack_Set_Flag_Operations_Correctly(byte operation, byte expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x58, operation, 0x08 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x58, operation, 0x08 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -1773,10 +1587,8 @@ namespace Processor.UnitTests
         public void PHP_Stack_Non_Set_Flag_Operations_Correctly(byte accumulatorValue, byte memoryValue, byte expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x58, 0xA9, accumulatorValue, 0x69, memoryValue, 0x08 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x58, 0xA9, accumulatorValue, 0x69, memoryValue, 0x08 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -1792,10 +1604,8 @@ namespace Processor.UnitTests
         public void PHP_Stack_Pointer_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x08 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x08 }, 0x00));
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -1811,12 +1621,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLA_Accumulator_Has_Correct_Value()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x48, 0xA9, 0x00, 0x68 }, 0x00);
             var processor = new Processor(memory);
+            
 
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x48, 0xA9, 0x00, 0x68 }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1831,12 +1640,11 @@ namespace Processor.UnitTests
         [TestCase(0xFF, false)]
         public void PLA_Zero_Flag_Has_Correct_Value(byte valueToLoad, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad, 0x48, 0x68 }, 0x00);
             var processor = new Processor(memory);
+            
 
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad, 0x48, 0x68 }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1850,12 +1658,11 @@ namespace Processor.UnitTests
         [TestCase(0xFF, true)]
         public void PLA_Negative_Flag_Has_Correct_Value(byte valueToLoad, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad, 0x48, 0x68 }, 0x00);
             var processor = new Processor(memory);
+            
 
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToLoad, 0x48, 0x68 }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1870,12 +1677,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLP_Carry_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x01, 0x48, 0x28 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x01, 0x48, 0x28 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1887,12 +1693,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLP_Zero_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x02, 0x48, 0x28 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x02, 0x48, 0x28 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1904,12 +1709,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLP_Decimal_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x08, 0x48, 0x28 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x08, 0x48, 0x28 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1921,12 +1725,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLP_Interrupt_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x04, 0x48, 0x28 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x04, 0x48, 0x28 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1938,12 +1741,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLP_Overflow_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x40, 0x48, 0x28 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x40, 0x48, 0x28 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1955,12 +1757,11 @@ namespace Processor.UnitTests
         [Test]
         public void PLP_Negative_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Read From stack
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x80, 0x48, 0x28 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x80, 0x48, 0x28 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -1978,11 +1779,10 @@ namespace Processor.UnitTests
         [TestCase(0x80, false)]
         public void ROL_Negative_Set_Correctly(byte accumulatorValue, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x2A }, 0x00);
             var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x2A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -1993,13 +1793,11 @@ namespace Processor.UnitTests
         [TestCase(false, true)]
         public void ROL_Zero_Set_Correctly(bool carryFlagSet, bool expectedResult)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var carryOperation = carryFlagSet ? 0x38 : 0x18;
+            var memory = Memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0x2A }, 0x00);
+            var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0x2A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2010,11 +1808,10 @@ namespace Processor.UnitTests
         [TestCase(0x7F, false)]
         public void ROL_Carry_Flag_Set_Correctly(byte accumulatorValue, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x2A }, 0x00);
             var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x2A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2029,12 +1826,11 @@ namespace Processor.UnitTests
         [TestCase(0x3E, 0x55, 0xAA, 0x01)] // ROL Absolute X
         public void ROL_Correct_Value_Stored(byte operation, byte valueToRotate, byte expectedValue, byte expectedLocation)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToRotate, operation, expectedLocation }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToRotate, operation, expectedLocation }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2054,13 +1850,11 @@ namespace Processor.UnitTests
         [TestCase(0x00, true, true)]
         public void ROR_Negative_Set_Correctly(byte accumulatorValue, bool carryBitSet, bool expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var carryOperation = carryBitSet ? 0x38 : 0x18;
+            var memory = Memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0xA9, accumulatorValue, 0x6A }, 0x00);
+            var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0xA9, accumulatorValue, 0x6A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2074,13 +1868,11 @@ namespace Processor.UnitTests
         [TestCase(0x01, true, false)]
         public void ROR_Zero_Set_Correctly(byte accumulatorValue, bool carryBitSet, bool expectedResult)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var carryOperation = carryBitSet ? 0x38 : 0x18;
+            var memory = Memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0xA9, accumulatorValue, 0x6A }, 0x00);
+            var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { (byte)carryOperation, 0xA9, accumulatorValue, 0x6A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2092,11 +1884,10 @@ namespace Processor.UnitTests
         [TestCase(0x02, false)]
         public void ROR_Carry_Flag_Set_Correctly(byte accumulatorValue, bool expectedResult)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x6A }, 0x00);
             var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorValue, 0x6A }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2111,12 +1902,11 @@ namespace Processor.UnitTests
         [TestCase(0x7E, 0xAA, 0x55, 0x01)] // ROR Absolute X
         public void ROR_Correct_Value_Stored(byte operation, byte valueToRotate, byte expectedValue, byte expectedLocation)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, valueToRotate, operation, expectedLocation }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, valueToRotate, operation, expectedLocation }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2133,11 +1923,9 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Program_Counter_Correct()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0xABCD, new byte[] { 0x00 }, 0xABCD);
             var processor = new Processor(memory);
-
-            memory.LoadProgram(0xABCD, new byte[] { 0x00 }, 0xABCD);
-            processor.Reset();
+            
             //The Reset Vector Points to 0x0000 by default, so load the RTI instruction there.
             processor.WriteMemoryValue(0x00, 0x40);
 
@@ -2150,12 +1938,11 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Carry_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Return from Interrupt
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x01, 0x48, 0x40 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x01, 0x48, 0x40 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2167,12 +1954,11 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Zero_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Return from Interrupt
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x02, 0x48, 0x40 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x02, 0x48, 0x40 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2184,12 +1970,11 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Decimal_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Return from Interrupt
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x08, 0x48, 0x40 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x08, 0x48, 0x40 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2201,12 +1986,11 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Interrupt_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Return from Interrupt
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x04, 0x48, 0x40 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x04, 0x48, 0x40 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2218,12 +2002,11 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Overflow_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Return from Interrupt
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x40, 0x48, 0x40 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x40, 0x48, 0x40 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2235,12 +2018,11 @@ namespace Processor.UnitTests
         [Test]
         public void RTI_Negative_Flag_Set_Correctly()
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             //Load Accumulator and Transfer to Stack, Clear Accumulator, and Return from Interrupt
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x80, 0x48, 0x40 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, 0x80, 0x48, 0x40 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2255,11 +2037,10 @@ namespace Processor.UnitTests
         [Test]
         public void RTS_Program_Counter_Has_Correct_Value()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0x00, new byte[] { 0x20, 0x04, 0x00, 0x00, 0x60 }, 0x00);
             var processor = new Processor(memory);
+            
 
-            memory.LoadProgram(0x00, new byte[] { 0x20, 0x04, 0x00, 0x00, 0x60 }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2269,11 +2050,9 @@ namespace Processor.UnitTests
         [Test]
         public void RTS_Stack_Pointer_Has_Correct_Value()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0xBBAA, new byte[] { 0x60 }, 0xBBAA);
             var processor = new Processor(memory);
-
-            memory.LoadProgram(0xBBAA, new byte[] { 0x60 }, 0xBBAA);
-            processor.Reset();
+            
 
             var stackLocation = processor.StackPointer;
             processor.NextStep();
@@ -2297,20 +2076,16 @@ namespace Processor.UnitTests
         [TestCase(0x80, 0xff, true, 0x81)]
         public void SBC_Accumulator_Correct_When_Not_In_BDC_Mode(byte accumlatorIntialValue, byte amountToSubtract, bool CarryFlagSet, byte expectedValue)
         {
-            var memory = new Memory();
+            var memory = CarryFlagSet ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (CarryFlagSet)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -2325,20 +2100,16 @@ namespace Processor.UnitTests
         public void SBC_Accumulator_Correct_When_In_BDC_Mode(byte accumlatorIntialValue, byte amountToAdd,
                                                                        bool setCarryFlag, byte expectedValue)
         {
-            var memory = new Memory();
+            var memory = setCarryFlag ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToAdd }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToAdd }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (setCarryFlag)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToAdd }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToAdd }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -2362,20 +2133,16 @@ namespace Processor.UnitTests
         public void SBC_Overflow_Correct_When_Not_In_BDC_Mode(byte accumlatorIntialValue, byte amountToSubtact, bool setCarryFlag,
                                                                      bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = setCarryFlag ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtact }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtact }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (setCarryFlag)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtact }, 0x00);
-                processor.Reset();
                 processor.NextStep();
-            }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtact }, 0x00);
-                processor.Reset();
             }
 
             processor.NextStep();
@@ -2394,24 +2161,17 @@ namespace Processor.UnitTests
         public void SBC_Overflow_Correct_When_In_BDC_Mode(byte accumlatorIntialValue, byte amountToSubtract, bool setCarryFlag,
                                                                      bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = setCarryFlag ?
+                Memory.LoadProgram(0, new byte[] { 0x38, 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00) :
+                Memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             if (setCarryFlag)
             {
-                memory.LoadProgram(0, new byte[] { 0x38, 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-                processor.Reset();
                 processor.NextStep();
             }
-            else
-            {
-                memory.LoadProgram(0, new byte[] { 0xF8, 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-            }
-
-            processor.Reset();
-
-
 
             processor.NextStep();
             processor.NextStep();
@@ -2427,12 +2187,11 @@ namespace Processor.UnitTests
         [TestCase(2, 1, true)]
         public void SBC_Carry_Correct(byte accumlatorIntialValue, byte amountToSubtract, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2445,12 +2204,11 @@ namespace Processor.UnitTests
         [TestCase(1, 1, false)]
         public void SBC_Zero_Correct(byte accumlatorIntialValue, byte amountToSubtract, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2463,12 +2221,11 @@ namespace Processor.UnitTests
         [TestCase(0x01, 0x01, true)]
         public void SBC_Negative_Correct(byte accumlatorIntialValue, byte amountToSubtract, bool expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0xE9, amountToSubtract }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2482,10 +2239,8 @@ namespace Processor.UnitTests
         public void SEC_Carry_Flag_Set_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x38 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x38 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.CarryFlag, Is.EqualTo(true));
@@ -2499,10 +2254,8 @@ namespace Processor.UnitTests
         public void SED_Decimal_Mode_Set_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xF8 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xF8 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.DecimalFlag, Is.EqualTo(true));
@@ -2516,10 +2269,8 @@ namespace Processor.UnitTests
         public void SEI_Interrupt_Flag_Set_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0x78 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x78 }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.DisableInterruptFlag, Is.EqualTo(true));
@@ -2533,10 +2284,8 @@ namespace Processor.UnitTests
         public void STA_Memory_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x85, 0x05 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, 0x03, 0x85, 0x05 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -2551,10 +2300,8 @@ namespace Processor.UnitTests
         public void STX_Memory_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, 0x03, 0x86, 0x05 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, 0x03, 0x86, 0x05 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -2569,10 +2316,8 @@ namespace Processor.UnitTests
         public void STY_Memory_Has_Correct_Value()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, 0x03, 0x84, 0x05 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, 0x03, 0x84, 0x05 }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -2589,9 +2334,6 @@ namespace Processor.UnitTests
         [TestCase(0x98, RegisterMode.YRegister, RegisterMode.Accumulator)]
         public void Transfer_Correct_Value_Set(byte operation, RegisterMode transferFrom, RegisterMode transferTo)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = transferFrom switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -2599,11 +2341,12 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new[] { loadOperation, (byte)0x03, operation }, 0x00);
-            processor.Reset();
-            processor.NextStep();
-            processor.NextStep();
+            var memory = Memory.LoadProgram(0, new[] { loadOperation, (byte)0x03, operation }, 0x00);
+            var processor = new Processor(memory);
+            
 
+            processor.NextStep();
+            processor.NextStep();
 
             switch (transferTo)
             {
@@ -2638,9 +2381,6 @@ namespace Processor.UnitTests
         [TestCase(0x98, 0x00, RegisterMode.YRegister, false)]
         public void Transfer_Negative_Value_Set(byte operation, byte value, RegisterMode transferFrom, bool expectedResult)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = transferFrom switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -2648,8 +2388,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new[] { loadOperation, value, operation }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new[] { loadOperation, value, operation }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
 
@@ -2666,9 +2408,6 @@ namespace Processor.UnitTests
         [TestCase(0x98, 0x00, RegisterMode.YRegister, true)]
         public void Transfer_Zero_Value_Set(byte operation, byte value, RegisterMode transferFrom, bool expectedResult)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = transferFrom switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -2676,8 +2415,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new[] { loadOperation, value, operation }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new[] { loadOperation, value, operation }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
 
@@ -2692,10 +2433,8 @@ namespace Processor.UnitTests
         public void TSX_XRegister_Set_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xBA }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xBA }, 0x00));
+            
 
             var stackPointer = processor.StackPointer;
             processor.NextStep();
@@ -2710,10 +2449,8 @@ namespace Processor.UnitTests
         public void TSX_Negative_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad, 0x9A, 0xBA }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad, 0x9A, 0xBA }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2727,10 +2464,8 @@ namespace Processor.UnitTests
         public void TSX_Zero_Set_Correctly(byte valueToLoad, bool expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad, 0x9A, 0xBA }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, valueToLoad, 0x9A, 0xBA }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2745,10 +2480,8 @@ namespace Processor.UnitTests
         public void TXS_Stack_Pointer_Set_Correctly()
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA2, 0xAA, 0x9A }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA2, 0xAA, 0x9A }, 0x00));
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -2765,12 +2498,11 @@ namespace Processor.UnitTests
         [TestCase(0xE9, 0x03, 0x01, 0x01)] // SBC
         public void Immediate_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, byte expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, operation, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, operation, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2785,12 +2517,11 @@ namespace Processor.UnitTests
         [TestCase(0xE5, 0x03, 0x01, 0x01)] // SBC
         public void ZeroPage_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, byte expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, operation, 0x05, 0x00, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, operation, 0x05, 0x00, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2805,13 +2536,12 @@ namespace Processor.UnitTests
         [TestCase(0xF5, 0x03, 0x01, 0x01)] // SBC
         public void ZeroPageX_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, byte expectedValue)
         {
-            var memory = new Memory();
+            //Just remember that my value's for the STX and ADC were added to the end of the byte array. In a real program this would be invalid, as an opcode would be next and 0x03 would be somewhere else
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, 0xA2, 0x01, operation, 0x06, 0x00, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            //Just remember that my value's for the STX and ADC were added to the end of the byte array. In a real program this would be invalid, as an opcode would be next and 0x03 would be somewhere else
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, 0xA2, 0x01, operation, 0x06, 0x00, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
             processor.NextStep();
@@ -2827,12 +2557,11 @@ namespace Processor.UnitTests
         [TestCase(0xED, 0x03, 0x01, 0x01)] // SBC
         public void Absolute_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, byte expectedValue)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { 0xA9, accumulatorInitialValue, operation, 0x06, 0x00, 0x00, valueToTest }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2853,13 +2582,11 @@ namespace Processor.UnitTests
         [TestCase(0xFD, 0x03, 0x01, true, 0x01)] // SBC
         public void AbsoluteX_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, bool addressWraps, byte expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-            memory.LoadProgram(0, addressWraps
+            var memory = Memory.LoadProgram(0, addressWraps
                                       ? new byte[] { 0xA9, accumulatorInitialValue, 0xA2, 0x09, operation, 0xff, 0xff, 0x00, valueToTest }
                                       : new byte[] { 0xA9, accumulatorInitialValue, 0xA2, 0x01, operation, 0x07, 0x00, 0x00, valueToTest }, 0x00);
+            var processor = new Processor(memory);
+            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             processor.NextStep();
             processor.NextStep();
@@ -2882,13 +2609,11 @@ namespace Processor.UnitTests
         [TestCase(0xF9, 0x03, 0x01, true, 0x01)] // SBC
         public void AbsoluteY_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, bool addressWraps, byte expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-            memory.LoadProgram(0, addressWraps
+            var memory = Memory.LoadProgram(0, addressWraps
                                       ? new byte[] { 0xA9, accumulatorInitialValue, 0xA0, 0x09, operation, 0xff, 0xff, 0x00, valueToTest }
                                       : new byte[] { 0xA9, accumulatorInitialValue, 0xA0, 0x01, operation, 0x07, 0x00, 0x00, valueToTest }, 0x00);
+            var processor = new Processor(memory);
+            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             processor.NextStep();
             processor.NextStep();
@@ -2911,15 +2636,14 @@ namespace Processor.UnitTests
         [TestCase(0xE1, 0x03, 0x01, true, 0x01)] // SBC
         public void Indexed_Indirect_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, bool addressWraps, byte expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-            memory.LoadProgram(0,
+            var memory = Memory.LoadProgram(0,
                                   addressWraps
                                       ? new byte[] { 0xA9, accumulatorInitialValue, 0xA6, 0x06, operation, 0xff, 0x08, 0x9, 0x00, valueToTest }
                                       : new byte[] { 0xA9, accumulatorInitialValue, 0xA6, 0x06, operation, 0x01, 0x06, 0x9, 0x00, valueToTest },
                                   0x00);
+
+            var processor = new Processor(memory);
+            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             processor.NextStep();
             processor.NextStep();
@@ -2942,15 +2666,14 @@ namespace Processor.UnitTests
         [TestCase(0xF1, 0x03, 0x01, true, 0x01)] // SBC
         public void Indirect_Indexed_Mode_Accumulator_Has_Correct_Result(byte operation, byte accumulatorInitialValue, byte valueToTest, bool addressWraps, byte expectedValue)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
-
-            memory.LoadProgram(0,
+            var memory = Memory.LoadProgram(0,
                                   addressWraps
                                       ? new byte[] { 0xA9, accumulatorInitialValue, 0xA0, 0x0A, operation, 0x07, 0x00, 0xFF, 0xFF, valueToTest }
                                       : new byte[] { 0xA9, accumulatorInitialValue, 0xA0, 0x01, operation, 0x07, 0x00, 0x08, 0x00, valueToTest },
                                   0x00);
+
+            var processor = new Processor(memory);
+            Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
             processor.NextStep();
             processor.NextStep();
@@ -2967,12 +2690,11 @@ namespace Processor.UnitTests
         [TestCase(0xB4, 0x03, false)] // LDY Zero Page X
         public void ZeroPage_Mode_Index_Has_Correct_Result(byte operation, byte valueToLoad, bool testXRegister)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { operation, 0x03, 0x00, valueToLoad }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { operation, 0x03, 0x00, valueToLoad }, 0x00);
-            processor.Reset();
             processor.NextStep();
 
             Assert.That(testXRegister ? processor.XRegister : processor.YRegister, Is.EqualTo(valueToLoad));
@@ -2983,12 +2705,11 @@ namespace Processor.UnitTests
         [TestCase(0xB4, 0x03, false)] // LDY Zero Page X
         public void ZeroPage_Mode_Index_Has_Correct_Result_When_Wrapped(byte operation, byte valueToLoad, bool testXRegister)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { testXRegister ? (byte)0xA0 : (byte)0xA2, 0xFF, operation, 0x06, 0x00, valueToLoad }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { testXRegister ? (byte)0xA0 : (byte)0xA2, 0xFF, operation, 0x06, 0x00, valueToLoad }, 0x00);
-            processor.Reset();
             processor.NextStep();
             processor.NextStep();
 
@@ -2999,14 +2720,12 @@ namespace Processor.UnitTests
         [TestCase(0xAC, 0x03, false)] // LDY Absolute
         public void Absolute_Mode_Index_Has_Correct_Result(byte operation, byte valueToLoad, bool testXRegister)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { operation, 0x04, 0x00, 0x00, valueToLoad }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.Accumulator, Is.EqualTo(0x00));
 
-            memory.LoadProgram(0, new byte[] { operation, 0x04, 0x00, 0x00, valueToLoad }, 0x00);
-            processor.Reset();
             processor.NextStep();
-
 
             Assert.That(testXRegister ? processor.XRegister : processor.YRegister, Is.EqualTo(valueToLoad));
         }
@@ -3018,9 +2737,6 @@ namespace Processor.UnitTests
         [TestCase(0xC0, 0xFF, 0x00, RegisterMode.YRegister)] //CPY Immediate
         public void Immediate_Mode_Compare_Operation_Has_Correct_Result(byte operation, byte accumulatorValue, byte memoryValue, RegisterMode mode)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = mode switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -3028,8 +2744,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new[] { loadOperation, accumulatorValue, operation, memoryValue }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new[] { loadOperation, accumulatorValue, operation, memoryValue }, 0x00);
+            var processor = new Processor(memory);
+
+            
 
             processor.NextStep();
             processor.NextStep();
@@ -3045,9 +2763,6 @@ namespace Processor.UnitTests
         [TestCase(0xC4, 0xFF, 0x00, RegisterMode.YRegister)] //CPY Zero Page
         public void ZeroPage_Modes_Compare_Operation_Has_Correct_Result(byte operation, byte accumulatorValue, byte memoryValue, RegisterMode mode)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = mode switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -3055,8 +2770,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new byte[] { loadOperation, accumulatorValue, operation, 0x04, memoryValue }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { loadOperation, accumulatorValue, operation, 0x04, memoryValue }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
 
@@ -3071,9 +2788,6 @@ namespace Processor.UnitTests
         [TestCase(0xCC, 0xFF, 0x00, RegisterMode.YRegister)] //CPY Absolute
         public void Absolute_Modes_Compare_Operation_Has_Correct_Result(byte operation, byte accumulatorValue, byte memoryValue, RegisterMode mode)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = mode switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -3081,8 +2795,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new byte[] { loadOperation, accumulatorValue, operation, 0x05, 0x00, memoryValue }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { loadOperation, accumulatorValue, operation, 0x05, 0x00, memoryValue }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
 
@@ -3096,13 +2812,11 @@ namespace Processor.UnitTests
         public void Indexed_Indirect_Mode_CMP_Operation_Has_Correct_Result(byte operation, byte accumulatorValue, byte memoryValue, bool addressWraps)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0,
+            var processor = new Processor(Memory.LoadProgram(0,
                                       addressWraps
                                           ? new byte[] { 0xA9, accumulatorValue, 0xA6, 0x06, operation, 0xff, 0x08, 0x9, 0x00, memoryValue }
                                           : new byte[] { 0xA9, accumulatorValue, 0xA6, 0x06, operation, 0x01, 0x06, 0x9, 0x00, memoryValue },
-                                      0x00);
+                                      0x00));
 
 
             processor.NextStep();
@@ -3119,13 +2833,11 @@ namespace Processor.UnitTests
         public void Indirect_Indexed_Mode_CMP_Operation_Has_Correct_Result(byte operation, byte accumulatorValue, byte memoryValue, bool addressWraps)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0,
+            var processor = new Processor(Memory.LoadProgram(0,
                               addressWraps
                                   ? new byte[] { 0xA9, accumulatorValue, 0x84, 0x06, operation, 0x07, 0x0A, 0xFF, 0xFF, memoryValue }
                                   : new byte[] { 0xA9, accumulatorValue, 0x84, 0x06, operation, 0x07, 0x01, 0x08, 0x00, memoryValue },
-                              0x00);
+                              0x00));
 
             processor.NextStep();
             processor.NextStep();
@@ -3145,10 +2857,8 @@ namespace Processor.UnitTests
         public void Zero_Page_DEC_INC_Has_Correct_Result(byte operation, byte memoryValue, byte expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { operation, 0x02, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { operation, 0x02, memoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ReadMemoryValue(0x02), Is.EqualTo(expectedValue));
@@ -3161,10 +2871,8 @@ namespace Processor.UnitTests
         public void Absolute_DEC_INC_Has_Correct_Result(byte operation, byte memoryValue, byte expectedValue)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { operation, 0x03, 0x00, memoryValue }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { operation, 0x03, 0x00, memoryValue }, 0x00));
+            
             processor.NextStep();
 
             Assert.That(processor.ReadMemoryValue(0x03), Is.EqualTo(expectedValue));
@@ -3181,9 +2889,6 @@ namespace Processor.UnitTests
         [TestCase(0x94, RegisterMode.YRegister)] // STY Zero Page X
         public void ZeroPage_Mode_Memory_Has_Correct_Result(byte operation, RegisterMode mode)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = mode switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -3191,8 +2896,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new byte[] { loadOperation, 0x04, operation, 0x00, 0x05 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { loadOperation, 0x04, operation, 0x00, 0x05 }, 0x00);
+            var processor = new Processor(memory);
+
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -3206,9 +2913,6 @@ namespace Processor.UnitTests
         [TestCase(0x8C, 0x03, RegisterMode.YRegister)] // STY Zero Page
         public void Absolute_Mode_Memory_Has_Correct_Result(byte operation, byte valueToLoad, RegisterMode mode)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             byte loadOperation = mode switch
             {
                 RegisterMode.Accumulator => 0xA9,
@@ -3216,8 +2920,10 @@ namespace Processor.UnitTests
                 _ => 0xA0,
             };
 
-            memory.LoadProgram(0, new byte[] { loadOperation, valueToLoad, operation, 0x04 }, 0x00);
-            processor.Reset();
+            var memory = Memory.LoadProgram(0, new byte[] { loadOperation, valueToLoad, operation, 0x04 }, 0x00);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
             processor.NextStep();
 
@@ -3373,9 +3079,8 @@ namespace Processor.UnitTests
         public void NumberOfCyclesRemaining_Correct_After_Operations_That_Do_Not_Wrap(byte operation, int numberOfCyclesUsed)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-            memory.LoadProgram(0, new byte[] { operation, 0x00 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { operation, 0x00 }, 0x00));
+            
 
             var startingNumberOfCycles = processor.GetCycleCount();
             processor.NextStep();
@@ -3410,11 +3115,9 @@ namespace Processor.UnitTests
         public void NumberOfCyclesRemaining_Correct_When_In_AbsoluteX_Or_AbsoluteY_And_Wrap(byte operation, bool isAbsoluteX, int numberOfCyclesUsed)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, isAbsoluteX
+            var processor = new Processor(Memory.LoadProgram(0, isAbsoluteX
                                       ? new byte[] { 0xA6, 0x06, operation, 0xff, 0xff, 0x00, 0x03 }
-                                      : new byte[] { 0xA4, 0x06, operation, 0xff, 0xff, 0x00, 0x03 }, 0x00);
+                                      : new byte[] { 0xA4, 0x06, operation, 0xff, 0xff, 0x00, 0x03 }, 0x00));
 
             processor.NextStep();
 
@@ -3436,10 +3139,8 @@ namespace Processor.UnitTests
         public void NumberOfCyclesRemaining_Correct_When_In_IndirectIndexed_And_Wrap(byte operation, int numberOfCyclesUsed)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, new byte[] { 0xA0, 0x04, operation, 0x05, 0x08, 0xFF, 0xFF, 0x03 }, 0x00);
-            processor.Reset();
+            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA0, 0x04, operation, 0x05, 0x08, 0xFF, 0xFF, 0x03 }, 0x00));
+            
             processor.NextStep();
             //Get the number of cycles after the register has been loaded, so we can isolate the operation under test
             var startingNumberOfCycles = processor.GetCycleCount();
@@ -3455,12 +3156,9 @@ namespace Processor.UnitTests
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Carry(byte operation, int numberOfCyclesUsed, bool isCarrySet)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-
-            memory.LoadProgram(0, isCarrySet
+            var processor = new Processor(Memory.LoadProgram(0, isCarrySet
                                          ? new byte[] { 0x38, operation, 0x00 }
-                                         : new byte[] { 0x18, operation, 0x00 }, 0x00);
+                                         : new byte[] { 0x18, operation, 0x00 }, 0x00));
             processor.NextStep();
 
 
@@ -3477,15 +3175,14 @@ namespace Processor.UnitTests
         [TestCase(0xB0, 4, true, false)] //BCC
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Carry_And_Wrap(byte operation, int numberOfCyclesUsed, bool isCarrySet, bool wrapRight)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var carryOperation = isCarrySet ? 0x38 : 0x18;
             var initialAddress = wrapRight ? 0xFFF0 : 0x00;
             var amountToMove = wrapRight ? 0x0F : 0x84;
 
-            memory.LoadProgram(initialAddress, new byte[] { (byte)carryOperation, operation, (byte)amountToMove, 0x00 }, initialAddress);
-            processor.Reset();
+            var memory = Memory.LoadProgram(initialAddress, new byte[] { (byte)carryOperation, operation, (byte)amountToMove, 0x00 }, initialAddress);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
 
             //Get the number of cycles after the register has been loaded, so we can isolate the operation under test
@@ -3502,11 +3199,9 @@ namespace Processor.UnitTests
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Zero(byte operation, int numberOfCyclesUsed, bool isZeroSet)
         {
             var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, isZeroSet
+            var processor = new Processor(Memory.LoadProgram(0, isZeroSet
                 ? new byte[] { 0xA9, 0x00, operation, 0x00 }
-                : new byte[] { 0xA9, 0x01, operation, 0x00 }, 0x00);
+                : new byte[] { 0xA9, 0x01, operation, 0x00 }, 0x00));
 
             processor.NextStep();
 
@@ -3524,15 +3219,14 @@ namespace Processor.UnitTests
         [TestCase(0xD0, 4, false, false)] //BNE
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Zero_And_Wrap(byte operation, int numberOfCyclesUsed, bool isZeroSet, bool wrapRight)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var newAccumulatorValue = isZeroSet ? 0x00 : 0x01;
             var initialAddress = wrapRight ? 0xFFF0 : 0x00;
             var amountToMove = wrapRight ? 0x0D : 0x84;
 
-            memory.LoadProgram(initialAddress, new byte[] { 0xA9, (byte)newAccumulatorValue, operation, (byte)amountToMove, 0x00 }, initialAddress);
-            processor.Reset();
+            var memory = Memory.LoadProgram(initialAddress, new byte[] { 0xA9, (byte)newAccumulatorValue, operation, (byte)amountToMove, 0x00 }, initialAddress);
+            var processor = new Processor(memory);
+            
+
             processor.NextStep();
 
             //Get the number of cycles after the register has been loaded, so we can isolate the operation under test
@@ -3548,15 +3242,12 @@ namespace Processor.UnitTests
         [TestCase(0x10, 2, true)] //BNE
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Negative(byte operation, int numberOfCyclesUsed, bool isNegativeSet)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, isNegativeSet
+            var memory = Memory.LoadProgram(0, isNegativeSet
                 ? new byte[] { 0xA9, 0x80, operation, 0x00 }
                 : new byte[] { 0xA9, 0x79, operation, 0x00 }, 0x00);
+            var processor = new Processor(memory);
 
             processor.NextStep();
-
 
             //Get the number of cycles after the register has been loaded, so we can isolate the operation under test
             var startingNumberOfCycles = processor.GetCycleCount();
@@ -3571,15 +3262,14 @@ namespace Processor.UnitTests
         [TestCase(0x10, 4, false, false)] //BNE
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Negative_And_Wrap(byte operation, int numberOfCyclesUsed, bool isNegativeSet, bool wrapRight)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var newAccumulatorValue = isNegativeSet ? 0x80 : 0x79;
             var initialAddress = wrapRight ? 0xFFF0 : 0x00;
             var amountToMove = wrapRight ? 0x0D : 0x84;
 
-            memory.LoadProgram(initialAddress, new byte[] { 0xA9, (byte)newAccumulatorValue, operation, (byte)amountToMove, 0x00 }, initialAddress);
-            processor.Reset();
+            var memory = Memory.LoadProgram(initialAddress, new byte[] { 0xA9, (byte)newAccumulatorValue, operation, (byte)amountToMove, 0x00 }, initialAddress);
+            var processor = new Processor(memory);
+
+            
             processor.NextStep();
 
             //Get the number of cycles after the register has been loaded, so we can isolate the operation under test
@@ -3595,12 +3285,10 @@ namespace Processor.UnitTests
         [TestCase(0x70, 2, false)] //BVS
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Overflow(byte operation, int numberOfCyclesUsed, bool isOverflowSet)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
-            memory.LoadProgram(0, isOverflowSet
+            var memory = Memory.LoadProgram(0, isOverflowSet
                 ? new byte[] { 0xA9, 0x01, 0x69, 0x7F, operation, 0x00 }
                 : new byte[] { 0xA9, 0x01, 0x69, 0x01, operation, 0x00 }, 0x00);
+            var processor = new Processor(memory);
 
             processor.NextStep();
             processor.NextStep();
@@ -3618,15 +3306,14 @@ namespace Processor.UnitTests
         [TestCase(0x70, 4, true, false)] //BVS
         public void NumberOfCyclesRemaining_Correct_When_Relative_And_Branch_On_Overflow_And_Wrap(byte operation, int numberOfCyclesUsed, bool isOverflowSet, bool wrapRight)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-
             var newAccumulatorValue = isOverflowSet ? 0x7F : 0x00;
             var initialAddress = wrapRight ? 0xFFF0 : 0x00;
             var amountToMove = wrapRight ? 0x0B : 0x86;
 
-            memory.LoadProgram(initialAddress, new byte[] { 0xA9, (byte)newAccumulatorValue, 0x69, 0x01, operation, (byte)amountToMove, 0x00 }, initialAddress);
-            processor.Reset();
+            var memory = Memory.LoadProgram(initialAddress, new byte[] { 0xA9, (byte)newAccumulatorValue, 0x69, 0x01, operation, (byte)amountToMove, 0x00 }, initialAddress);
+            var processor = new Processor(memory);
+
+            
             processor.NextStep();
             processor.NextStep();
 
@@ -3778,13 +3465,11 @@ namespace Processor.UnitTests
         [TestCase(0x98, 1)] // TYA Implied
         public void Program_Counter_Correct(byte operation, int expectedProgramCounter)
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0, new byte[] { operation, 0x0 }, 0x00);
             var processor = new Processor(memory);
+            
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-
-            memory.LoadProgram(0, new byte[] { operation, 0x0 }, 0x00);
-            processor.Reset();
             processor.NextStep();
 
             Assert.That(processor.ProgramCounter, Is.EqualTo(expectedProgramCounter));
@@ -3794,14 +3479,13 @@ namespace Processor.UnitTests
         [TestCase(0xB0, false, 2)] //BCS
         public void Branch_On_Carry_Program_Counter_Correct_When_NoBranch_Occurs(byte operation, bool carrySet, byte expectedOutput)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
-
-            memory.LoadProgram(0,
+            var memory = Memory.LoadProgram(0,
                                   carrySet
                                           ? new byte[] { 0x38, operation, 0x48 }
                                       : new byte[] { 0x18, operation, 0x48 }, 0x00);
+
+            var processor = new Processor(memory);
+            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
             processor.NextStep();
             var currentProgramCounter = processor.ProgramCounter;
@@ -3815,14 +3499,13 @@ namespace Processor.UnitTests
         [TestCase(0xD0, true, 2)]  //BNE
         public void Branch_On_Zero_Program_Counter_Correct_When_NoBranch_Occurs(byte operation, bool zeroSet, byte expectedOutput)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
-
-            memory.LoadProgram(0,
+            var memory = Memory.LoadProgram(0,
                                   zeroSet
                                           ? new byte[] { 0xA9, 0x00, operation }
                                       : new byte[] { 0xA9, 0x01, operation }, 0x00);
+
+            var processor = new Processor(memory);
+            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
             processor.NextStep();
             var currentProgramCounter = processor.ProgramCounter;
@@ -3836,14 +3519,13 @@ namespace Processor.UnitTests
         [TestCase(0x10, true, 2)]  //BPL
         public void Branch_On_Negative_Program_Counter_Correct_When_NoBranch_Occurs(byte operation, bool negativeSet, byte expectedOutput)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
-
-            memory.LoadProgram(0,
+            var memory = Memory.LoadProgram(0,
                                   negativeSet
                                           ? new byte[] { 0xA9, 0x80, operation }
                                       : new byte[] { 0xA9, 0x79, operation }, 0x00);
+
+            var processor = new Processor(memory);
+            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
             processor.NextStep();
             var currentProgramCounter = processor.ProgramCounter;
@@ -3857,13 +3539,12 @@ namespace Processor.UnitTests
         [TestCase(0x70, false, 2)]  //BVS
         public void Branch_On_Overflow_Program_Counter_Correct_When_NoBranch_Occurs(byte operation, bool overflowSet, byte expectedOutput)
         {
-            var memory = new Memory();
-            var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
-
-            memory.LoadProgram(0, overflowSet
+            var memory = Memory.LoadProgram(0, overflowSet
                 ? new byte[] { 0xA9, 0x01, 0x69, 0x7F, operation, 0x00 }
                 : new byte[] { 0xA9, 0x01, 0x69, 0x01, operation, 0x00 }, 0x00);
+
+            var processor = new Processor(memory);
+            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
             processor.NextStep();
             processor.NextStep();
@@ -3876,12 +3557,9 @@ namespace Processor.UnitTests
         [Test]
         public void Program_Counter_Wraps_Correctly()
         {
-            var memory = new Memory();
+            var memory = Memory.LoadProgram(0xFFFF, new byte[] { 0x38 }, 0xFFFF);
             var processor = new Processor(memory);
-            Assert.That(processor.ProgramCounter, Is.EqualTo(0));
 
-            memory.LoadProgram(0xFFFF, new byte[] { 0x38 }, 0xFFFF);
-            processor.Reset();
             processor.NextStep();
 
             Assert.That(processor.ProgramCounter, Is.EqualTo(0));
