@@ -71,8 +71,11 @@ namespace Processor.UnitTests
         public void Klaus_Dorman_Functional_Test(int accumulator, int programCounter)
         // ReSharper restore InconsistentNaming
         {
-            var processor = new Processor(new Memory());
-            processor.LoadProgram(0x400, KdTestProgram, 0x400);
+            var memory = new Memory();
+            var processor = new Processor(memory);
+            memory.LoadProgram(0x400, KdTestProgram, 0x400);
+            processor.Reset();
+
             var numberOfCycles = 0;
 
             while (true)
@@ -81,10 +84,14 @@ namespace Processor.UnitTests
                 numberOfCycles++;
 
                 if (processor.ProgramCounter == programCounter)
+                {
                     break;
+                }
 
                 if (numberOfCycles > 40037912)
+                {
                     Assert.Fail("Maximum Number of Cycles Exceeded");
+                }
             }
 
             Assert.That(processor.Accumulator, Is.EqualTo(accumulator));
@@ -108,8 +115,10 @@ namespace Processor.UnitTests
             var previousInterruptWatchValue = 0;
             //var previousInterruptDisableCleared = false;
 
-            var processor = new Processor(new Memory());
-            processor.LoadProgram(0x400, InterruptProgram, 0x400);
+            var memory = new Memory();
+            var processor = new Processor(memory);
+            memory.LoadProgram(0x400, InterruptProgram, 0x400);
+            processor.Reset();
             var numberOfCycles = 0;
 
             while (true)
@@ -123,28 +132,38 @@ namespace Processor.UnitTests
                     previousInterruptWatchValue = interruptWatch;
 
                     if ((interruptWatch & 2) != 0)
+                    {
                         processor.TriggerNmi = true;
+                    }
                 }
 
                 if (!processor.DisableInterruptFlag && (interruptWatch & 1) != 0)
+                {
                     processor.InterruptRequest();
+                }
 
                 processor.NextStep();
                 numberOfCycles++;
 
                 if (processor.ProgramCounter == programCounter)
+                {
                     break;
+                }
 
                 if (numberOfCycles > 100000)
+                {
                     Assert.Fail("Maximum Number of Cycles Exceeded");
+                }
             }
         }
 
         [Test]
         public void Cycle_Test()
         {
-            var processor = new Processor(new Memory());
-            processor.LoadProgram(0x000, CycleProgram, 0x00);
+            var memory = new Memory();
+            var processor = new Processor(memory);
+            memory.LoadProgram(0x000, CycleProgram, 0x00);
+            processor.Reset();
             var numberofLoops = 1;
 
             while (true)
@@ -166,10 +185,14 @@ namespace Processor.UnitTests
                 numberofLoops++;
 
                 if (processor.ProgramCounter == 0x1266)
+                {
                     break;
+                }
 
                 if (numberofLoops > 500)
+                {
                     Assert.Fail("Maximum Number of Cycles Exceeded");
+                }
             }
 
             Assert.AreEqual(1140, processor.GetCycleCount());
@@ -179,7 +202,7 @@ namespace Processor.UnitTests
         public void SetupPrograms()
         {
             const string EnvironmentVariable = "TestDataDirectory";
-            string CycleTestDataResultsDir = Environment.GetEnvironmentVariable(EnvironmentVariable);
+            var CycleTestDataResultsDir = Environment.GetEnvironmentVariable(EnvironmentVariable);
 
             if (string.IsNullOrWhiteSpace(CycleTestDataResultsDir))
             {
@@ -220,12 +243,12 @@ namespace Processor.UnitTests
 
                 CycleTestDataResults.Add(new TestData
                 {
-                    ProgramCounter = Int32.Parse(values[1], System.Globalization.NumberStyles.HexNumber),
-                    Accumulator = Int32.Parse(values[2], System.Globalization.NumberStyles.HexNumber),
-                    XRegister = Int32.Parse(values[3], System.Globalization.NumberStyles.HexNumber),
-                    YRegister = Int32.Parse(values[4], System.Globalization.NumberStyles.HexNumber),
-                    Flags = Int32.Parse(values[5], System.Globalization.NumberStyles.HexNumber),
-                    StackPointer = Int32.Parse(values[6], System.Globalization.NumberStyles.HexNumber),
+                    ProgramCounter = int.Parse(values[1], System.Globalization.NumberStyles.HexNumber),
+                    Accumulator = int.Parse(values[2], System.Globalization.NumberStyles.HexNumber),
+                    XRegister = int.Parse(values[3], System.Globalization.NumberStyles.HexNumber),
+                    YRegister = int.Parse(values[4], System.Globalization.NumberStyles.HexNumber),
+                    Flags = int.Parse(values[5], System.Globalization.NumberStyles.HexNumber),
+                    StackPointer = int.Parse(values[6], System.Globalization.NumberStyles.HexNumber),
                     CycleCount = int.Parse(values[7]),
                 });
 
