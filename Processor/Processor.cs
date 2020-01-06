@@ -150,9 +150,24 @@ namespace Processor
             //Set the Program Counter to the Reset Vector Address.
             ProgramCounter = 0xFFFC;
             //Reset the Program Counter to the Address contained in the Reset Vector
-            ProgramCounter = (_memory[ProgramCounter] | (_memory[ProgramCounter + 1] << 8));
 
-            CurrentOpCode = (OpCode)_memory[ProgramCounter];
+            _memory.AddressBus.Value = ProgramCounter;
+            _memory.RwBus.Value = true;
+            _memory.Cycle();
+            var lowByte = _memory.DataBus.Value;
+
+            _memory.AddressBus.Value = ProgramCounter + 1;
+            _memory.RwBus.Value = true;
+            _memory.Cycle();
+            var highByte = _memory.DataBus.Value;
+
+            ProgramCounter = (lowByte | (highByte << 8));
+
+            _memory.AddressBus.Value = ProgramCounter;
+            _memory.RwBus.Value = true;
+            _memory.Cycle();
+
+            CurrentOpCode = (OpCode)_memory.DataBus.Value;
         }
 
         /// <summary>
@@ -197,19 +212,12 @@ namespace Processor
         /// <returns>the byte being returned</returns>
         public byte ReadMemoryValue(int address)
         {
-            var value = _memory[address];
-            IncrementCycleCount();
-            return value;
-        }
+            _memory.AddressBus.Value = address;
+            _memory.RwBus.Value = true;
+            _memory.Cycle();
 
-        /// <summary>
-        /// Returns the byte at a given address without incrementing the cycle. Useful for test harness. 
-        /// </summary>
-        /// <param name="address"></param>
-        /// <returns></returns>
-        public byte ReadMemoryValueWithoutCycle(int address)
-        {
-            var value = _memory[address];
+            var value = _memory.DataBus.Value;
+            IncrementCycleCount();
             return value;
         }
 
@@ -221,7 +229,10 @@ namespace Processor
         public void WriteMemoryValue(int address, byte data)
         {
             IncrementCycleCount();
-            _memory[address] = data;
+            _memory.AddressBus.Value = address;
+            _memory.RwBus.Value = false;
+            _memory.DataBus.Value = data;
+            _memory.Cycle();
         }
 
         /// <summary>
@@ -1525,7 +1536,11 @@ namespace Processor
         private byte PeekStack()
         {
             //The stack lives at 0x100-0x1FF, but the value is only a byte so it needs to be translated
-            return _memory[StackPointer + 0x100];
+            _memory.AddressBus.Value = StackPointer + 0x100;
+            _memory.RwBus.Value = true;
+            _memory.Cycle();
+
+            return _memory.DataBus.Value;
         }
 
         /// <summary>
@@ -1535,7 +1550,10 @@ namespace Processor
         private void PokeStack(byte value)
         {
             //The stack lives at 0x100-0x1FF, but the value is only a byte so it needs to be translated
-            _memory[StackPointer + 0x100] = value;
+            _memory.AddressBus.Value = StackPointer + 0x100;
+            _memory.RwBus.Value = false;
+            _memory.DataBus.Value = value;
+            _memory.Cycle();
         }
 
         /// <summary>

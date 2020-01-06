@@ -2,6 +2,10 @@
 {
     public interface IMemory
     {
-        byte this[in Address address] { get; set; }
+        Bus<byte> DataBus { get; set; }
+        Bus<Address> AddressBus { get; set; }
+        Bus<bool> RwBus { get; set; }
+
+        void Cycle();
     }
 }

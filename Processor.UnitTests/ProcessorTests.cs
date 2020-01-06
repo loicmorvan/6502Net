@@ -35,8 +35,8 @@ namespace Processor.UnitTests
         [Fact]
         public void ProgramCounter_Correct_When_Program_Loaded()
         {
-            var memory = new Memory();
-            var processor = new Processor(Memory.LoadProgram(0, new byte[1], 0x01));
+            var memory = Memory.LoadProgram(0, new byte[1], 0x01);
+            var processor = new Processor(memory);
 
             Assert.Equal<Address>(0x01, processor.ProgramCounter);
         }
@@ -277,8 +277,8 @@ namespace Processor.UnitTests
         [InlineData(170, 85, 0)]
         public void AND_Accumulator_Correct(byte accumlatorIntialValue, byte amountToAnd, byte expectedResult)
         {
-            var memory = new Memory();
-            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x29, amountToAnd }, 0x00));
+            var memory = Memory.LoadProgram(0, new byte[] { 0xA9, accumlatorIntialValue, 0x29, amountToAnd }, 0x00);
+            var processor = new Processor(memory);
 
             processor.NextStep();
             processor.NextStep();
@@ -575,9 +575,8 @@ namespace Processor.UnitTests
         [Fact]
         public void BRK_Program_Counter_Set_To_Address_At_Break_Vector_Address()
         {
-            var memory = new Memory();
-            var processor = new Processor(Memory.LoadProgram(0, new byte[] { 0x00 }, 0x00));
-
+            var memory = Memory.LoadProgram(0, new byte[] { 0x00 }, 0x00);
+            var processor = new Processor(memory);
 
             //Manually Write the Break Address
             processor.WriteMemoryValue(0xFFFE, 0xBC);

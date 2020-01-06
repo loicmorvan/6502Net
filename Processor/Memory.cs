@@ -12,6 +12,10 @@ namespace Processor
             _memory = new byte[_maxCapacity];
         }
 
+        public Bus<byte> DataBus { get; set; } = new Bus<byte>();
+        public Bus<Address> AddressBus { get; set; } = new Bus<Address>();
+        public Bus<bool> RwBus { get; set; } = new Bus<bool>();
+
         public byte this[in Address address]
         {
             get => _memory[address];
@@ -51,6 +55,18 @@ namespace Processor
             memory[0xFFFD] = initialProgramCounter.GetHighBits();
 
             return memory;
+        }
+
+        public void Cycle()
+        {
+            if (RwBus.Value)
+            {
+                DataBus.Value = _memory[AddressBus.Value];
+            }
+            else
+            {
+                _memory[AddressBus.Value] = DataBus.Value;
+            }
         }
     }
 }

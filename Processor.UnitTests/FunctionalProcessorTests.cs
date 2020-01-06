@@ -70,8 +70,8 @@ namespace Processor.UnitTests
         public void Klaus_Dorman_Functional_Test(int accumulator, int programCounter)
         // ReSharper restore InconsistentNaming
         {
-            var memory = new Memory();
-            var processor = new Processor(Memory.LoadProgram(0x400, KdTestProgram, 0x400));
+            var memory = Memory.LoadProgram(0x400, KdTestProgram, 0x400);
+            var processor = new Processor(memory);
             
 
             var numberOfCycles = 0;
