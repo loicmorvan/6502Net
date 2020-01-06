@@ -7,7 +7,6 @@ namespace Processor
     /// </summary>
     public sealed class Processor
     {
-        private int _stackPointer;
         private int _cycleCount;
         private bool _previousInterrupt;
         private bool _interrupt;
@@ -42,12 +41,6 @@ namespace Processor
         public OpCode CurrentOpCode { get; private set; }
 
         /// <summary>
-        /// The disassembly of the current operation. This value is only set when the CPU is built in debug mode.
-        /// </summary>
-        // TODO: I don't like that.
-        public Disassembly CurrentDisassembly { get; private set; }
-
-        /// <summary>
         /// Points to the Current Address of the instruction being executed by the system. 
         /// The PC wraps when the value is greater than 65535, or less than 0. 
         /// </summary>
@@ -61,24 +54,10 @@ namespace Processor
         /// Points to the Current Position of the Stack.
         /// This value is a 00-FF value but is offset to point to the location in memory where the stack resides.
         /// </summary>
-        public int StackPointer
+        public byte StackPointer
         {
-            get => _stackPointer;
-            private set
-            {
-                if (value > 0xFF)
-                {
-                    _stackPointer = value - 0x100;
-                }
-                else if (value < 0x00)
-                {
-                    _stackPointer = value + 0x100;
-                }
-                else
-                {
-                    _stackPointer = value;
-                }
-            }
+            get;
+            private set;
         }
 
         /// <summary>
@@ -145,7 +124,7 @@ namespace Processor
 
         private void InitializeStackPointerAndProgramCounter()
         {
-            StackPointer = 0x1FD;
+            StackPointer = 0xFF;
 
             //Set the Program Counter to the Reset Vector Address.
             ProgramCounter = 0xFFFC;

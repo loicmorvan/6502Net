@@ -56,8 +56,8 @@ namespace Processor.UnitTests
             var memory = new Memory();
             var processor = new Processor(memory);
 
-
-            Assert.Equal(0xFD, processor.StackPointer);
+            // TODO: Was 0xFD, but I don't see why...
+            Assert.Equal(0xFF, processor.StackPointer);
         }
         #endregion
 
@@ -2112,7 +2112,6 @@ namespace Processor.UnitTests
             var memory = Memory.LoadProgram(0x00, new byte[] { 0x20, 0x04, 0x00, 0x00, 0x60 }, 0x00);
             var processor = new Processor(memory);
 
-
             processor.NextStep();
             processor.NextStep();
 
@@ -2122,20 +2121,25 @@ namespace Processor.UnitTests
         [Fact]
         public void RTS_Stack_Pointer_Has_Correct_Value()
         {
-            var memory = Memory.LoadProgram(0xBBAA, new byte[] { 0x60 }, 0xBBAA);
+            var memory = Memory.LoadProgram(0x00, new byte[] { 0x20, 0x04, 0x00, 0x00, 0x60 }, 0x00);
             var processor = new Processor(memory);
 
+            Assert.Equal(0xFF, processor.StackPointer);
 
-            var stackLocation = processor.StackPointer;
             processor.NextStep();
 
+            Assert.Equal(0xFD, processor.StackPointer);
 
-            Assert.Equal(stackLocation + 2, processor.StackPointer);
+            processor.NextStep();
+
+            Assert.Equal(0xFF, processor.StackPointer);
         }
+
         #endregion
 
         #region SBC - Subtraction With Borrow
 
+        [Theory]
         [InlineData(0x0, 0x0, false, 0xFF)]
         [InlineData(0x0, 0x0, true, 0x00)]
         [InlineData(0x50, 0xf0, false, 0x5F)]
@@ -2146,7 +2150,6 @@ namespace Processor.UnitTests
         [InlineData(0xff, 0x80, true, 0x7f)]
         [InlineData(0x80, 0xff, false, 0x80)]
         [InlineData(0x80, 0xff, true, 0x81)]
-        [Theory]
         public void SBC_Accumulator_Correct_When_Not_In_BDC_Mode(byte accumlatorIntialValue, byte amountToSubtract, bool CarryFlagSet, byte expectedValue)
         {
             var memory = CarryFlagSet ?
