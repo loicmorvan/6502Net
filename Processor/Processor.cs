@@ -135,7 +135,9 @@ namespace Processor
 
         private void InitializeStackPointerAndProgramCounter()
         {
-            StackPointer = 0xFF;
+            // According to this site: https://www.pagetable.com/?p=410
+            // After a Reset, the StackPointer is 0xFD.
+            StackPointer = 0xFD;
 
             //Set the Program Counter to the Reset Vector Address.
             ProgramCounter = 0xFFFC;

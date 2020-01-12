@@ -6,6 +6,7 @@ namespace Processor.UnitTests
     public class ProcessorTests
     {
         #region Initialization Tests
+
         [Fact]
         // ReSharper disable InconsistentNaming
         public void Processor_Status_Flags_Initialized_Correctly()
@@ -56,9 +57,9 @@ namespace Processor.UnitTests
             var memory = new Memory();
             var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
 
-            // TODO: Was 0xFD, but I don't see why...
-            Assert.Equal(0xFF, processor.StackPointer);
+            Assert.Equal(0xFD, processor.StackPointer);
         }
+
         #endregion
 
         #region ADC - Add with Carry Tests
@@ -2112,12 +2113,8 @@ namespace Processor.UnitTests
         [Fact]
         public void RTS_Stack_Pointer_Has_Correct_Value()
         {
-            var memory = Memory.LoadProgram(0x00, new byte[] { 0x20, 0x04, 0x00, 0x00, 0x60 }, 0x00);
+            var memory = Memory.LoadProgram(0xBBAA, new byte[] { 0x60 }, 0xBBAA);
             var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
-
-            Assert.Equal(0xFF, processor.StackPointer);
-
-            processor.NextStep();
 
             Assert.Equal(0xFD, processor.StackPointer);
 
