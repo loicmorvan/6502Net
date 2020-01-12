@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Linq;
 
 namespace Processor
 {
@@ -10,11 +11,14 @@ namespace Processor
         public Memory()
         {
             _memory = new byte[_maxCapacity];
+
+            ReadyBus.ValueChanged.Subscribe(_ => Cycle());
         }
 
         public Bus<byte> DataBus { get; set; } = new Bus<byte>();
         public Bus<Address> AddressBus { get; set; } = new Bus<Address>();
         public Bus<bool> RwBus { get; set; } = new Bus<bool>();
+        public Bus<bool> ReadyBus { get; set; } = new Bus<bool>();
 
         public byte this[in Address address]
         {
@@ -57,7 +61,7 @@ namespace Processor
             return memory;
         }
 
-        public void Cycle()
+        private void Cycle()
         {
             if (RwBus.Value)
             {

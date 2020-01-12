@@ -71,7 +71,7 @@ namespace Processor.UnitTests
         // ReSharper restore InconsistentNaming
         {
             var memory = Memory.LoadProgram(0x400, KdTestProgram, 0x400);
-            var processor = new Processor(memory);
+            var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
             
 
             var numberOfCycles = 0;
@@ -114,7 +114,7 @@ namespace Processor.UnitTests
             var previousInterruptWatchValue = 0;
 
             var memory = Memory.LoadProgram(0x400, InterruptProgram, 0x400);
-            var processor = new Processor(memory);
+            var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
             
             var numberOfCycles = 0;
 
@@ -154,7 +154,7 @@ namespace Processor.UnitTests
         public void Cycle_Test()
         {
             var memory = Memory.LoadProgram(0x000, CycleProgram, 0x00);
-            var processor = new Processor(memory);
+            var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
             
             var numberofLoops = 1;
 

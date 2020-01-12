@@ -5,7 +5,6 @@
         Bus<byte> DataBus { get; set; }
         Bus<Address> AddressBus { get; set; }
         Bus<bool> RwBus { get; set; }
-
-        void Cycle();
+        Bus<bool> ReadyBus { get; set; }
     }
 }
