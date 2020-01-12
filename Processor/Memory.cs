@@ -12,27 +12,13 @@ namespace Processor
         {
             _memory = new byte[_maxCapacity];
 
-            ReadyBus.ValueChanged.Subscribe(_ => Cycle());
+            ReadyBus.ValueChanged.Where(v => !v).Subscribe(_ => Cycle());
         }
 
         public Bus<byte> DataBus { get; set; } = new Bus<byte>();
         public Bus<Address> AddressBus { get; set; } = new Bus<Address>();
         public Bus<bool> RwBus { get; set; } = new Bus<bool>();
         public Bus<bool> ReadyBus { get; set; } = new Bus<bool>();
-
-        public byte this[in Address address]
-        {
-            get => _memory[address];
-            set => _memory[address] = value;
-        }
-
-        public void Clear()
-        {
-            for (var i = 0; i < _maxCapacity; i++)
-            {
-                _memory[i] = 0x00;
-            }
-        }
 
         /// <summary>
         /// Loads a program into the processors memory
@@ -51,12 +37,12 @@ namespace Processor
 
             for (var i = 0; i < program.Length; i++)
             {
-                memory[(ushort)(i + offset)] = program[i];
+                memory._memory[(ushort)(i + offset)] = program[i];
             }
 
             //Write the initialProgram Counter to the reset vector
-            memory[0xFFFC] = initialProgramCounter.GetLowBits();
-            memory[0xFFFD] = initialProgramCounter.GetHighBits();
+            memory._memory[0xFFFC] = initialProgramCounter.GetLowBits();
+            memory._memory[0xFFFD] = initialProgramCounter.GetHighBits();
 
             return memory;
         }
