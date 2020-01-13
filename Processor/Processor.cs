@@ -263,331 +263,336 @@ namespace Processor
             //The x+ cycles denotes that if a page wrap occurs, then an additional cycle is consumed.
             //The x++ cycles denotes that 1 cycle is added when a branch occurs and it on the same page, and two cycles are added if its on a different page./
             //This is handled inside the GetValueFromMemory Method
-            switch ((byte)CurrentOpCode)
+            switch (CurrentOpCode)
             {
-                // TODO: Refacto without cast to byte.
-
                 #region Add / Subtract Operations
+
                 //ADC Add With Carry, Immediate, 2 Bytes, 2 Cycles
-                case 0x69:
+                case OpCode.AdcImmediate:
                     {
                         AddWithCarryOperation(AddressingMode.Immediate);
                         break;
                     }
                 //ADC Add With Carry, Zero Page, 2 Bytes, 3 Cycles
-                case 0x65:
+                case OpCode.AdcZeroPage:
                     {
                         AddWithCarryOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //ADC Add With Carry, Zero Page X, 2 Bytes, 4 Cycles
-                case 0x75:
+                case OpCode.AdcZeroPageX:
                     {
                         AddWithCarryOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //ADC Add With Carry, Absolute, 3 Bytes, 4 Cycles
-                case 0x6D:
+                case OpCode.AdcAbsolute:
                     {
                         AddWithCarryOperation(AddressingMode.Absolute);
                         break;
                     }
                 //ADC Add With Carry, Absolute X, 3 Bytes, 4+ Cycles
-                case 0x7D:
+                case OpCode.AdcAbsoluteX:
                     {
                         AddWithCarryOperation(AddressingMode.AbsoluteX);
                         break;
                     }
                 //ADC Add With Carry, Absolute Y, 3 Bytes, 4+ Cycles
-                case 0x79:
+                case OpCode.AdcAbsoluteY:
                     {
                         AddWithCarryOperation(AddressingMode.AbsoluteY);
                         break;
                     }
                 //ADC Add With Carry, Indexed Indirect, 2 Bytes, 6 Cycles
-                case 0x61:
+                case OpCode.AdcIndirectX:
                     {
                         AddWithCarryOperation(AddressingMode.IndirectX);
                         break;
                     }
                 //ADC Add With Carry, Indexed Indirect, 2 Bytes, 5+ Cycles
-                case 0x71:
+                case OpCode.AdcIndirectY:
                     {
                         AddWithCarryOperation(AddressingMode.IndirectY);
                         break;
                     }
                 //SBC Subtract with Borrow, Immediate, 2 Bytes, 2 Cycles
-                case 0xE9:
+                case OpCode.SbcImmediate:
                     {
                         SubtractWithBorrowOperation(AddressingMode.Immediate);
                         break;
                     }
                 //SBC Subtract with Borrow, Zero Page, 2 Bytes, 3 Cycles
-                case 0xE5:
+                case OpCode.SbcZeroPage:
                     {
                         SubtractWithBorrowOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //SBC Subtract with Borrow, Zero Page X, 2 Bytes, 4 Cycles
-                case 0xF5:
+                case OpCode.SbcZeroPageX:
                     {
                         SubtractWithBorrowOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //SBC Subtract with Borrow, Absolute, 3 Bytes, 4 Cycles
-                case 0xED:
+                case OpCode.SbcAbsolute:
                     {
                         SubtractWithBorrowOperation(AddressingMode.Absolute);
                         break;
                     }
                 //SBC Subtract with Borrow, Absolute X, 3 Bytes, 4+ Cycles
-                case 0xFD:
+                case OpCode.SbcAbsoluteX:
                     {
                         SubtractWithBorrowOperation(AddressingMode.AbsoluteX);
                         break;
                     }
                 //SBC Subtract with Borrow, Absolute Y, 3 Bytes, 4+ Cycles
-                case 0xF9:
+                case OpCode.SbcAbsoluteY:
                     {
                         SubtractWithBorrowOperation(AddressingMode.AbsoluteY);
                         break;
                     }
                 //SBC Subtract with Borrow, Indexed Indirect, 2 Bytes, 6 Cycles
-                case 0xE1:
+                case OpCode.SbcIndirectX:
                     {
                         SubtractWithBorrowOperation(AddressingMode.IndirectX);
                         break;
                     }
                 //SBC Subtract with Borrow, Indexed Indirect, 2 Bytes, 5+ Cycles
-                case 0xF1:
+                case OpCode.SbcIndirectY:
                     {
                         SubtractWithBorrowOperation(AddressingMode.IndirectY);
                         break;
                     }
+
                 #endregion
 
                 #region Branch Operations
+
                 //BCC Branch if Carry is Clear, Relative, 2 Bytes, 2++ Cycles
-                case 0x90:
+                case OpCode.BccRelative:
                     {
                         BranchOperation(!CarryFlag);
                         break;
 
                     }
                 //BCS Branch if Carry is Set, Relative, 2 Bytes, 2++ Cycles
-                case 0xB0:
+                case OpCode.BcsRelative:
                     {
                         BranchOperation(CarryFlag);
                         break;
                     }
                 //BEQ Branch if Zero is Set, Relative, 2 Bytes, 2++ Cycles
-                case 0xF0:
+                case OpCode.BeqRelative:
                     {
                         BranchOperation(ZeroFlag);
                         break;
                     }
 
                 // BMI Branch if Negative Set
-                case 0x30:
+                case OpCode.BmiRelative:
                     {
                         BranchOperation(NegativeFlag);
                         break;
                     }
                 //BNE Branch if Zero is Not Set, Relative, 2 Bytes, 2++ Cycles
-                case 0xD0:
+                case OpCode.BneRelative:
                     {
                         BranchOperation(!ZeroFlag);
                         break;
                     }
                 // BPL Branch if Negative Clear, 2 Bytes, 2++ Cycles
-                case 0x10:
+                case OpCode.BplRelative:
                     {
                         BranchOperation(!NegativeFlag);
                         break;
                     }
                 // BVC Branch if Overflow Clear, 2 Bytes, 2++ Cycles
-                case 0x50:
+                case OpCode.BvcRelative:
                     {
                         BranchOperation(!OverflowFlag);
                         break;
                     }
                 // BVS Branch if Overflow Set, 2 Bytes, 2++ Cycles
-                case 0x70:
+                case OpCode.BvsRelative:
                     {
                         BranchOperation(OverflowFlag);
                         break;
                     }
+
                 #endregion
 
                 #region BitWise Comparison Operations
+
                 //AND Compare Memory with Accumulator, Immediate, 2 Bytes, 2 Cycles
-                case 0x29:
+                case OpCode.AndImmediate:
                     {
                         AndOperation(AddressingMode.Immediate);
                         break;
                     }
                 //AND Compare Memory with Accumulator, Zero Page, 2 Bytes, 3 Cycles
-                case 0x25:
+                case OpCode.AndZeroPage:
                     {
                         AndOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //AND Compare Memory with Accumulator, Zero PageX, 2 Bytes, 3 Cycles
-                case 0x35:
+                case OpCode.AndZeroPageX:
                     {
                         AndOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //AND Compare Memory with Accumulator, Absolute,  3 Bytes, 4 Cycles
-                case 0x2D:
+                case OpCode.AndAbsolute:
                     {
                         AndOperation(AddressingMode.Absolute);
                         break;
                     }
                 //AND Compare Memory with Accumulator, AbsolueteX 3 Bytes, 4+ Cycles
-                case 0x3D:
+                case OpCode.AndAbsoluteX:
                     {
                         AndOperation(AddressingMode.AbsoluteX);
                         break;
                     }
                 //AND Compare Memory with Accumulator, AbsoluteY, 3 Bytes, 4+ Cycles
-                case 0x39:
+                case OpCode.AndAbsoluteY:
                     {
                         AndOperation(AddressingMode.AbsoluteY);
                         break;
                     }
                 //AND Compare Memory with Accumulator, IndexedIndirect, 2 Bytes, 6 Cycles
-                case 0x21:
+                case OpCode.AndIndirectX:
                     {
                         AndOperation(AddressingMode.IndirectX);
                         break;
                     }
                 //AND Compare Memory with Accumulator, IndirectIndexed, 2 Bytes, 5 Cycles
-                case 0x31:
+                case OpCode.AndIndirectY:
                     {
                         AndOperation(AddressingMode.IndirectY);
                         break;
                     }
                 //BIT Compare Memory with Accumulator, Zero Page, 2 Bytes, 3 Cycles
-                case 0x24:
+                case OpCode.BitZeroPage:
                     {
                         BitOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //BIT Compare Memory with Accumulator, Absolute, 2 Bytes, 4 Cycles
-                case 0x2C:
+                case OpCode.BitAbsolute:
                     {
                         BitOperation(AddressingMode.Absolute);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, Immediate, 2 Bytes, 2 Cycles
-                case 0x49:
+                case OpCode.EorImmediate:
                     {
                         EorOperation(AddressingMode.Immediate);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, Zero Page, 2 Bytes, 3 Cycles
-                case 0x45:
+                case OpCode.EorZeroPage:
                     {
                         EorOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, Zero Page X, 2 Bytes, 4 Cycles
-                case 0x55:
+                case OpCode.EorZeroPageX:
                     {
                         EorOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, Absolute, 3 Bytes, 4 Cycles
-                case 0x4D:
+                case OpCode.EorAbsolute:
                     {
                         EorOperation(AddressingMode.Absolute);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, Absolute X, 3 Bytes, 4+ Cycles
-                case 0x5D:
+                case OpCode.EorAbsoluteX:
                     {
                         EorOperation(AddressingMode.AbsoluteX);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, Absolute Y, 3 Bytes, 4+ Cycles
-                case 0x59:
+                case OpCode.EorAbsoluteY:
                     {
                         EorOperation(AddressingMode.AbsoluteY);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, IndexedIndirect, 2 Bytes 6 Cycles
-                case 0x41:
+                case OpCode.EorIndirectX:
                     {
                         EorOperation(AddressingMode.IndirectX);
                         break;
                     }
                 //EOR Exclusive OR Memory with Accumulator, IndirectIndexed, 2 Bytes 5 Cycles
-                case 0x51:
+                case OpCode.EorIndirectY:
                     {
                         EorOperation(AddressingMode.IndirectY);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, Immediate, 2 Bytes, 2 Cycles
-                case 0x09:
+                case OpCode.OraImmediate:
                     {
                         OrOperation(AddressingMode.Immediate);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, Zero Page, 2 Bytes, 2 Cycles
-                case 0x05:
+                case OpCode.OraZeroPage:
                     {
                         OrOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, Zero PageX, 2 Bytes, 4 Cycles
-                case 0x15:
+                case OpCode.OraZeroPageX:
                     {
                         OrOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, Absolute,  3 Bytes, 4 Cycles
-                case 0x0D:
+                case OpCode.OraAbsolute:
                     {
                         OrOperation(AddressingMode.Absolute);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, AbsolueteX 3 Bytes, 4+ Cycles
-                case 0x1D:
+                case OpCode.OraAbsoluteX:
                     {
                         OrOperation(AddressingMode.AbsoluteX);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, AbsoluteY, 3 Bytes, 4+ Cycles
-                case 0x19:
+                case OpCode.OraAbsoluteY:
                     {
                         OrOperation(AddressingMode.AbsoluteY);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, IndexedIndirect, 2 Bytes, 6 Cycles
-                case 0x01:
+                case OpCode.OraIndirectX:
                     {
                         OrOperation(AddressingMode.IndirectX);
                         break;
                     }
                 //ORA Compare Memory with Accumulator, IndirectIndexed, 2 Bytes, 5 Cycles
-                case 0x11:
+                case OpCode.OraIndirectY:
                     {
                         OrOperation(AddressingMode.IndirectY);
                         break;
                     }
+
                 #endregion
 
                 #region Clear Flag Operations
+
                 //CLC Clear Carry Flag, Implied, 1 Byte, 2 Cycles
-                case 0x18:
+                case OpCode.ClcImplied:
                     {
                         CarryFlag = false;
                         IncrementCycleCount();
                         break;
                     }
                 //CLD Clear Decimal Flag, Implied, 1 Byte, 2 Cycles
-                case 0xD8:
+                case OpCode.CldImplied:
                     {
                         DecimalFlag = false;
                         IncrementCycleCount();
@@ -595,7 +600,7 @@ namespace Processor
 
                     }
                 //CLI Clear Interrupt Flag, Implied, 1 Byte, 2 Cycles
-                case 0x58:
+                case OpCode.CliImplied:
                     {
                         DisableInterruptFlag = false;
                         IncrementCycleCount();
@@ -603,7 +608,7 @@ namespace Processor
 
                     }
                 //CLV Clear Overflow Flag, Implied, 1 Byte, 2 Cycles
-                case 0xB8:
+                case OpCode.ClvImplied:
                     {
                         OverflowFlag = false;
                         IncrementCycleCount();
@@ -613,178 +618,183 @@ namespace Processor
                 #endregion
 
                 #region Compare Operations
+
                 //CMP Compare Accumulator with Memory, Immediate, 2 Bytes, 2 Cycles
-                case 0xC9:
+                case OpCode.CmpImmediate:
                     {
                         CompareOperation(AddressingMode.Immediate, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Zero Page, 2 Bytes, 3 Cycles
-                case 0xC5:
+                case OpCode.CmpZeroPage:
                     {
                         CompareOperation(AddressingMode.ZeroPage, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Zero Page x, 2 Bytes, 4 Cycles
-                case 0xD5:
+                case OpCode.CmpZeroPageX:
                     {
                         CompareOperation(AddressingMode.ZeroPageX, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Absolute, 3 Bytes, 4 Cycles
-                case 0xCD:
+                case OpCode.CmpAbsolute:
                     {
                         CompareOperation(AddressingMode.Absolute, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Absolute X, 2 Bytes, 4 Cycles
-                case 0xDD:
+                case OpCode.CmpAbsoluteX:
                     {
                         CompareOperation(AddressingMode.AbsoluteX, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Absolute Y, 2 Bytes, 4 Cycles
-                case 0xD9:
+                case OpCode.CmpAbsoluteY:
                     {
                         CompareOperation(AddressingMode.AbsoluteY, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Indirect X, 2 Bytes, 6 Cycles
-                case 0xC1:
+                case OpCode.CmpIndirectX:
                     {
                         CompareOperation(AddressingMode.IndirectX, Accumulator);
                         break;
                     }
                 //CMP Compare Accumulator with Memory, Indirect Y, 2 Bytes, 5 Cycles
-                case 0xD1:
+                case OpCode.CmpIndirectY:
                     {
                         CompareOperation(AddressingMode.IndirectY, Accumulator);
                         break;
                     }
                 //CPX Compare Accumulator with X Register, Immediate, 2 Bytes, 2 Cycles
-                case 0xE0:
+                case OpCode.CpxImmediate:
                     {
                         CompareOperation(AddressingMode.Immediate, XRegister);
                         break;
                     }
                 //CPX Compare Accumulator with X Register, Zero Page, 2 Bytes, 3 Cycles
-                case 0xE4:
+                case OpCode.CpxZeroPage:
                     {
                         CompareOperation(AddressingMode.ZeroPage, XRegister);
                         break;
                     }
                 //CPX Compare Accumulator with X Register, Absolute, 3 Bytes, 4 Cycles
-                case 0xEC:
+                case OpCode.CpxAbsolute:
                     {
                         CompareOperation(AddressingMode.Absolute, XRegister);
                         break;
                     }
                 //CPY Compare Accumulator with Y Register, Immediate, 2 Bytes, 2 Cycles
-                case 0xC0:
+                case OpCode.CpyImmediate:
                     {
                         CompareOperation(AddressingMode.Immediate, YRegister);
                         break;
                     }
                 //CPY Compare Accumulator with Y Register, Zero Page, 2 Bytes, 3 Cycles
-                case 0xC4:
+                case OpCode.CpyZeroPage:
                     {
                         CompareOperation(AddressingMode.ZeroPage, YRegister);
                         break;
                     }
                 //CPY Compare Accumulator with Y Register, Absolute, 3 Bytes, 4 Cycles
-                case 0xCC:
+                case OpCode.CpyAbsolute:
                     {
                         CompareOperation(AddressingMode.Absolute, YRegister);
                         break;
                     }
+
                 #endregion
 
                 #region Increment/Decrement Operations
+
                 //DEC Decrement Memory by One, Zero Page, 2 Bytes, 5 Cycles
-                case 0xC6:
+                case OpCode.DecZeroPage:
                     {
                         ChangeMemoryByOne(AddressingMode.ZeroPage, true);
                         break;
                     }
                 //DEC Decrement Memory by One, Zero Page X, 2 Bytes, 6 Cycles
-                case 0xD6:
+                case OpCode.DecZeroPageX:
                     {
                         ChangeMemoryByOne(AddressingMode.ZeroPageX, true);
                         break;
                     }
                 //DEC Decrement Memory by One, Absolute, 3 Bytes, 6 Cycles
-                case 0xCE:
+                case OpCode.DecAbsolute:
                     {
                         ChangeMemoryByOne(AddressingMode.Absolute, true);
                         break;
                     }
                 //DEC Decrement Memory by One, Absolute X, 3 Bytes, 7 Cycles
-                case 0xDE:
+                case OpCode.DecAbsoluteX:
                     {
                         ChangeMemoryByOne(AddressingMode.AbsoluteX, true);
                         IncrementCycleCount();
                         break;
                     }
                 //DEX Decrement X Register by One, Implied, 1 Bytes, 2 Cycles
-                case 0xCA:
+                case OpCode.DexImplied:
                     {
                         ChangeRegisterByOne(true, true);
                         break;
                     }
                 //DEY Decrement Y Register by One, Implied, 1 Bytes, 2 Cycles
-                case 0x88:
+                case OpCode.DeyImplied:
                     {
                         ChangeRegisterByOne(false, true);
                         break;
                     }
                 //INC Increment Memory by One, Zero Page, 2 Bytes, 5 Cycles
-                case 0xE6:
+                case OpCode.IncZeroPage:
                     {
                         ChangeMemoryByOne(AddressingMode.ZeroPage, false);
                         break;
                     }
                 //INC Increment Memory by One, Zero Page X, 2 Bytes, 6 Cycles
-                case 0xF6:
+                case OpCode.IncZeroPageX:
                     {
                         ChangeMemoryByOne(AddressingMode.ZeroPageX, false);
                         break;
                     }
                 //INC Increment Memory by One, Absolute, 3 Bytes, 6 Cycles
-                case 0xEE:
+                case OpCode.IncAbsolute:
                     {
                         ChangeMemoryByOne(AddressingMode.Absolute, false);
                         break;
                     }
                 //INC Increment Memory by One, Absolute X, 3 Bytes, 7 Cycles
-                case 0xFE:
+                case OpCode.IncAbsoluteX:
                     {
                         ChangeMemoryByOne(AddressingMode.AbsoluteX, false);
                         IncrementCycleCount();
                         break;
                     }
                 //INX Increment X Register by One, Implied, 1 Bytes, 2 Cycles
-                case 0xE8:
+                case OpCode.InxImplied:
                     {
                         ChangeRegisterByOne(true, false);
                         break;
                     }
                 //INY Increment Y Register by One, Implied, 1 Bytes, 2 Cycles
-                case 0xC8:
+                case OpCode.InyImplied:
                     {
                         ChangeRegisterByOne(false, false);
                         break;
                     }
+
                 #endregion
 
                 #region GOTO and GOSUB Operations
+
                 //JMP Jump to New Location, Absolute 3 Bytes, 3 Cycles
-                case 0x4C:
+                case OpCode.JmpAbsolute:
                     {
                         ProgramCounter = GetAddressByAddressingMode(AddressingMode.Absolute);
                         break;
                     }
                 //JMP Jump to New Location, Indirect 3 Bytes, 5 Cycles
-                case 0x6C:
+                case OpCode.JmpIndirect:
                     {
                         ProgramCounter = GetAddressByAddressingMode(AddressingMode.Absolute);
 
@@ -805,34 +815,36 @@ namespace Processor
                         break;
                     }
                 //JSR Jump to SubRoutine, Absolute, 3 Bytes, 6 Cycles
-                case 0x20:
+                case OpCode.JsrAbsolute:
                     {
                         JumpToSubRoutineOperation();
                         break;
                     }
                 //BRK Simulate IRQ, Implied, 1 Byte, 7 Cycles
-                case 0x00:
+                case OpCode.BrkImplied:
                     {
                         BreakOperation(true, 0xFFFE);
                         break;
                     }
                 //RTI Return From Interrupt, Implied, 1 Byte, 6 Cycles
-                case 0x40:
+                case OpCode.RtiImplied:
                     {
                         ReturnFromInterruptOperation();
                         break;
                     }
                 //RTS Return From Subroutine, Implied, 1 Byte, 6 Cycles
-                case 0x60:
+                case OpCode.RtsImplied:
                     {
                         ReturnFromSubRoutineOperation();
                         break;
                     }
+
                 #endregion
 
                 #region Load Value From Memory Operations
+
                 //LDA Load Accumulator with Memory, Immediate, 2 Bytes, 2 Cycles
-                case 0xA9:
+                case OpCode.LdaImmediate:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.Immediate));
                         SetZeroFlag(Accumulator);
@@ -840,7 +852,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Zero Page, 2 Bytes, 3 Cycles
-                case 0xA5:
+                case OpCode.LdaZeroPage:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPage));
                         SetZeroFlag(Accumulator);
@@ -848,7 +860,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Zero Page X, 2 Bytes, 4 Cycles
-                case 0xB5:
+                case OpCode.LdaZeroPageX:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPageX));
                         SetZeroFlag(Accumulator);
@@ -856,7 +868,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Absolute, 3 Bytes, 4 Cycles
-                case 0xAD:
+                case OpCode.LdaAbsolute:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.Absolute));
                         SetZeroFlag(Accumulator);
@@ -864,7 +876,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Absolute X, 3 Bytes, 4+ Cycles
-                case 0xBD:
+                case OpCode.LdaAbsoluteX:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.AbsoluteX));
                         SetZeroFlag(Accumulator);
@@ -872,7 +884,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Absolute Y, 3 Bytes, 4+ Cycles
-                case 0xB9:
+                case OpCode.LdaAbsoluteY:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.AbsoluteY));
                         SetZeroFlag(Accumulator);
@@ -880,7 +892,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Index Indirect, 2 Bytes, 6 Cycles
-                case 0xA1:
+                case OpCode.LdaIndirectX:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.IndirectX));
                         SetZeroFlag(Accumulator);
@@ -888,7 +900,7 @@ namespace Processor
                         break;
                     }
                 //LDA Load Accumulator with Memory, Indirect Index, 2 Bytes, 5+ Cycles
-                case 0xB1:
+                case OpCode.LdaIndirectY:
                     {
                         Accumulator = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.IndirectY));
                         SetZeroFlag(Accumulator);
@@ -896,7 +908,7 @@ namespace Processor
                         break;
                     }
                 //LDX Load X with memory, Immediate, 2 Bytes, 2 Cycles
-                case 0xA2:
+                case OpCode.LdxImmediate:
                     {
                         XRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.Immediate));
                         SetZeroFlag(XRegister);
@@ -904,7 +916,7 @@ namespace Processor
                         break;
                     }
                 //LDX Load X with memory, Zero Page, 2 Bytes, 3 Cycles
-                case 0xA6:
+                case OpCode.LdxZeroPage:
                     {
                         XRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPage));
                         SetZeroFlag(XRegister);
@@ -912,7 +924,7 @@ namespace Processor
                         break;
                     }
                 //LDX Load X with memory, Zero Page Y, 2 Bytes, 4 Cycles
-                case 0xB6:
+                case OpCode.LdxZeroPageY:
                     {
                         XRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPageY));
                         SetZeroFlag(XRegister);
@@ -920,7 +932,7 @@ namespace Processor
                         break;
                     }
                 //LDX Load X with memory, Absolute, 3 Bytes, 4 Cycles
-                case 0xAE:
+                case OpCode.LdxAbsolute:
                     {
                         XRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.Absolute));
                         SetZeroFlag(XRegister);
@@ -928,7 +940,7 @@ namespace Processor
                         break;
                     }
                 //LDX Load X with memory, Absolute Y, 3 Bytes, 4+ Cycles
-                case 0xBE:
+                case OpCode.LdxAbsoluteY:
                     {
                         XRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.AbsoluteY));
                         SetZeroFlag(XRegister);
@@ -936,7 +948,7 @@ namespace Processor
                         break;
                     }
                 //LDY Load Y with memory, Immediate, 2 Bytes, 2 Cycles
-                case 0xA0:
+                case OpCode.LdyImmediate:
                     {
                         YRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.Immediate));
                         SetZeroFlag(YRegister);
@@ -944,7 +956,7 @@ namespace Processor
                         break;
                     }
                 //LDY Load Y with memory, Zero Page, 2 Bytes, 3 Cycles
-                case 0xA4:
+                case OpCode.LdyZeroPage:
                     {
                         YRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPage));
                         SetZeroFlag(YRegister);
@@ -952,7 +964,7 @@ namespace Processor
                         break;
                     }
                 //LDY Load Y with memory, Zero Page X, 2 Bytes, 4 Cycles
-                case 0xB4:
+                case OpCode.LdyZeroPageX:
                     {
                         YRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPageX));
                         SetZeroFlag(YRegister);
@@ -960,7 +972,7 @@ namespace Processor
                         break;
                     }
                 //LDY Load Y with memory, Absolute, 3 Bytes, 4 Cycles
-                case 0xAC:
+                case OpCode.LdyAbsolute:
                     {
                         YRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.Absolute));
                         SetZeroFlag(YRegister);
@@ -968,18 +980,20 @@ namespace Processor
                         break;
                     }
                 //LDY Load Y with memory, Absolue X, 3 Bytes, 4+ Cycles
-                case 0xBC:
+                case OpCode.LdyAbsoluteX:
                     {
                         YRegister = ReadMemoryValue(GetAddressByAddressingMode(AddressingMode.AbsoluteX));
                         SetZeroFlag(YRegister);
                         SetNegativeFlag(YRegister);
                         break;
                     }
+
                 #endregion
 
                 #region Push/Pull Stack
+
                 //PHA Push Accumulator onto Stack, Implied, 1 Byte, 3 Cycles
-                case 0x48:
+                case OpCode.PhaImplied:
                     {
                         ReadMemoryValue(ProgramCounter + 1);
 
@@ -990,7 +1004,7 @@ namespace Processor
 
                     }
                 //PHP Push Flags onto Stack, Implied, 1 Byte, 3 Cycles
-                case 0x08:
+                case OpCode.PhpImplied:
                     {
                         ReadMemoryValue(ProgramCounter + 1);
 
@@ -1000,7 +1014,7 @@ namespace Processor
                         break;
                     }
                 //PLA Pull Accumulator from Stack, Implied, 1 Byte, 4 Cycles
-                case 0x68:
+                case OpCode.PlaImplied:
                     {
                         ReadMemoryValue(ProgramCounter + 1);
                         StackPointer++;
@@ -1014,7 +1028,7 @@ namespace Processor
                         break;
                     }
                 //PLP Pull Flags from Stack, Implied, 1 Byte, 4 Cycles
-                case 0x28:
+                case OpCode.PlpImplied:
                     {
                         ReadMemoryValue(ProgramCounter + 1);
 
@@ -1027,7 +1041,7 @@ namespace Processor
                         break;
                     }
                 //TSX Transfer Stack Pointer to X Register, 1 Bytes, 2 Cycles
-                case 0xBA:
+                case OpCode.TsxImplied:
                     {
                         XRegister = StackPointer;
 
@@ -1037,252 +1051,260 @@ namespace Processor
                         break;
                     }
                 //TXS Transfer X Register to Stack Pointer, 1 Bytes, 2 Cycles
-                case 0x9A:
+                case OpCode.TxsImplied:
                     {
                         StackPointer = (byte)XRegister;
                         IncrementCycleCount();
                         break;
                     }
+
                 #endregion
 
                 #region Set Flag Operations
+
                 //SEC Set Carry, Implied, 1 Bytes, 2 Cycles
-                case 0x38:
+                case OpCode.SecImplied:
                     {
                         CarryFlag = true;
                         IncrementCycleCount();
                         break;
                     }
                 //SED Set Interrupt, Implied, 1 Bytes, 2 Cycles
-                case 0xF8:
+                case OpCode.SedImplied:
                     {
                         DecimalFlag = true;
                         IncrementCycleCount();
                         break;
                     }
                 //SEI Set Interrupt, Implied, 1 Bytes, 2 Cycles
-                case 0x78:
+                case OpCode.SeiImplied:
                     {
                         DisableInterruptFlag = true;
                         IncrementCycleCount();
                         break;
                     }
+
                 #endregion
 
                 #region Shift/Rotate Operations
+
                 //ASL Shift Left 1 Bit Memory or Accumulator, Accumulator, 1 Bytes, 2 Cycles
-                case 0x0A:
+                case OpCode.AslAccumulator:
                     {
                         AslOperation(AddressingMode.Accumulator);
                         break;
                     }
                 //ASL Shift Left 1 Bit Memory or Accumulator, Zero Page, 2 Bytes, 5 Cycles
-                case 0x06:
+                case OpCode.AslZeroPage:
                     {
                         AslOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //ASL Shift Left 1 Bit Memory or Accumulator, Zero PageX, 2 Bytes, 6 Cycles
-                case 0x16:
+                case OpCode.AslZeroPageX:
                     {
                         AslOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //ASL Shift Left 1 Bit Memory or Accumulator, Absolute, 3 Bytes, 6 Cycles
-                case 0x0E:
+                case OpCode.AslAbsolute:
                     {
                         AslOperation(AddressingMode.Absolute);
                         break;
                     }
                 //ASL Shift Left 1 Bit Memory or Accumulator, AbsoluteX, 3 Bytes, 7 Cycles
-                case 0x1E:
+                case OpCode.AslAbsoluteX:
                     {
                         AslOperation(AddressingMode.AbsoluteX);
                         IncrementCycleCount();
                         break;
                     }
                 //LSR Shift Left 1 Bit Memory or Accumulator, Accumulator, 1 Bytes, 2 Cycles
-                case 0x4A:
+                case OpCode.LsrAccumulator:
                     {
                         LsrOperation(AddressingMode.Accumulator);
                         break;
                     }
                 //LSR Shift Left 1 Bit Memory or Accumulator, Zero Page, 2 Bytes, 5 Cycles
-                case 0x46:
+                case OpCode.LsrZeroPage:
                     {
                         LsrOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //LSR Shift Left 1 Bit Memory or Accumulator, Zero PageX, 2 Bytes, 6 Cycles
-                case 0x56:
+                case OpCode.LsrZeroPageX:
                     {
                         LsrOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //LSR Shift Left 1 Bit Memory or Accumulator, Absolute, 3 Bytes, 6 Cycles
-                case 0x4E:
+                case OpCode.LsrAbsolute:
                     {
                         LsrOperation(AddressingMode.Absolute);
                         break;
                     }
                 //LSR Shift Left 1 Bit Memory or Accumulator, AbsoluteX, 3 Bytes, 7 Cycles
-                case 0x5E:
+                case OpCode.LsrAbsoluteX:
                     {
                         LsrOperation(AddressingMode.AbsoluteX);
                         IncrementCycleCount();
                         break;
                     }
                 //ROL Rotate Left 1 Bit Memory or Accumulator, Accumulator, 1 Bytes, 2 Cycles
-                case 0x2A:
+                case OpCode.RolAccumulator:
                     {
                         RolOperation(AddressingMode.Accumulator);
                         break;
                     }
                 //ROL Rotate Left 1 Bit Memory or Accumulator, Zero Page, 2 Bytes, 5 Cycles
-                case 0x26:
+                case OpCode.RolZeroPage:
                     {
                         RolOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //ROL Rotate Left 1 Bit Memory or Accumulator, Zero PageX, 2 Bytes, 6 Cycles
-                case 0x36:
+                case OpCode.RolZeroPageX:
                     {
                         RolOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //ROL Rotate Left 1 Bit Memory or Accumulator, Absolute, 3 Bytes, 6 Cycles
-                case 0x2E:
+                case OpCode.RolAbsolute:
                     {
                         RolOperation(AddressingMode.Absolute);
                         break;
                     }
                 //ROL Rotate Left 1 Bit Memory or Accumulator, AbsoluteX, 3 Bytes, 7 Cycles
-                case 0x3E:
+                case OpCode.RolAbsoluteX:
                     {
                         RolOperation(AddressingMode.AbsoluteX);
                         IncrementCycleCount();
                         break;
                     }
                 //ROR Rotate Right 1 Bit Memory or Accumulator, Accumulator, 1 Bytes, 2 Cycles
-                case 0x6A:
+                case OpCode.RorAccumulator:
                     {
                         RorOperation(AddressingMode.Accumulator);
                         break;
                     }
                 //ROR Rotate Right 1 Bit Memory or Accumulator, Zero Page, 2 Bytes, 5 Cycles
-                case 0x66:
+                case OpCode.RorZeroPage:
                     {
                         RorOperation(AddressingMode.ZeroPage);
                         break;
                     }
                 //ROR Rotate Right 1 Bit Memory or Accumulator, Zero PageX, 2 Bytes, 6 Cycles
-                case 0x76:
+                case OpCode.RorZeroPageX:
                     {
                         RorOperation(AddressingMode.ZeroPageX);
                         break;
                     }
                 //ROR Rotate Right 1 Bit Memory or Accumulator, Absolute, 3 Bytes, 6 Cycles
-                case 0x6E:
+                case OpCode.RorAbsolute:
                     {
                         RorOperation(AddressingMode.Absolute);
                         break;
                     }
                 //ROR Rotate Right 1 Bit Memory or Accumulator, AbsoluteX, 3 Bytes, 7 Cycles
-                case 0x7E:
+                case OpCode.RorAbsoluteX:
                     {
                         RorOperation(AddressingMode.AbsoluteX);
                         IncrementCycleCount();
                         break;
                     }
+
                 #endregion
 
                 #region Store Value In Memory Operations
+
                 //STA Store Accumulator In Memory, Zero Page, 2 Bytes, 3 Cycles
-                case 0x85:
+                case OpCode.StaZeroPage:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPage), (byte)Accumulator);
                         break;
                     }
                 //STA Store Accumulator In Memory, Zero Page X, 2 Bytes, 4 Cycles
-                case 0x95:
+                case OpCode.StaZeroPageX:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPageX), (byte)Accumulator);
                         break;
                     }
                 //STA Store Accumulator In Memory, Absolute, 3 Bytes, 4 Cycles
-                case 0x8D:
+                case OpCode.StaAbsolute:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.Absolute), (byte)Accumulator);
                         break;
                     }
                 //STA Store Accumulator In Memory, Absolute X, 3 Bytes, 5 Cycles
-                case 0x9D:
+                case OpCode.StaAbsoluteX:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.AbsoluteX), (byte)Accumulator);
                         IncrementCycleCount();
                         break;
                     }
                 //STA Store Accumulator In Memory, Absolute Y, 3 Bytes, 5 Cycles
-                case 0x99:
+                case OpCode.StaAbsoluteY:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.AbsoluteY), (byte)Accumulator);
                         IncrementCycleCount();
                         break;
                     }
                 //STA Store Accumulator In Memory, Indexed Indirect, 2 Bytes, 6 Cycles
-                case 0x81:
+                case OpCode.StaIndirectX:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.IndirectX), (byte)Accumulator);
                         break;
                     }
                 //STA Store Accumulator In Memory, Indirect Indexed, 2 Bytes, 6 Cycles
-                case 0x91:
+                case OpCode.StaIndirectY:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.IndirectY), (byte)Accumulator);
                         IncrementCycleCount();
                         break;
                     }
                 //STX Store Index X, Zero Page, 2 Bytes, 3 Cycles
-                case 0x86:
+                case OpCode.StxZeroPage:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPage), (byte)XRegister);
                         break;
                     }
                 //STX Store Index X, Zero Page Y, 2 Bytes, 4 Cycles
-                case 0x96:
+                case OpCode.StxZeroPageY:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPageY), (byte)XRegister);
                         break;
                     }
                 //STX Store Index X, Absolute, 3 Bytes, 4 Cycles
-                case 0x8E:
+                case OpCode.StxAbsolute:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.Absolute), (byte)XRegister);
                         break;
                     }
                 //STY Store Index Y, Zero Page, 2 Bytes, 3 Cycles
-                case 0x84:
+                case OpCode.StyZeroPage:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPage), (byte)YRegister);
                         break;
                     }
                 //STY Store Index Y, Zero Page X, 2 Bytes, 4 Cycles
-                case 0x94:
+                case OpCode.StyZeroPageX:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.ZeroPageX), (byte)YRegister);
                         break;
                     }
                 //STY Store Index Y, Absolute, 2 Bytes, 4 Cycles
-                case 0x8C:
+                case OpCode.StyAbsolute:
                     {
                         WriteMemoryValue(GetAddressByAddressingMode(AddressingMode.Absolute), (byte)YRegister);
                         break;
                     }
+
                 #endregion
 
                 #region Transfer Operations
+
                 //TAX Transfer Accumulator to X Register, Implied, 1 Bytes, 2 Cycles
-                case 0xAA:
+                case OpCode.TaxImplied:
                     {
                         IncrementCycleCount();
                         XRegister = Accumulator;
@@ -1292,7 +1314,7 @@ namespace Processor
                         break;
                     }
                 //TAY Transfer Accumulator to Y Register, 1 Bytes, 2 Cycles
-                case 0xA8:
+                case OpCode.TayImplied:
                     {
                         IncrementCycleCount();
                         YRegister = Accumulator;
@@ -1302,7 +1324,7 @@ namespace Processor
                         break;
                     }
                 //TXA Transfer X Register to Accumulator, Implied, 1 Bytes, 2 Cycles
-                case 0x8A:
+                case OpCode.TxaImplied:
                     {
                         IncrementCycleCount();
                         Accumulator = XRegister;
@@ -1312,7 +1334,7 @@ namespace Processor
                         break;
                     }
                 //TYA Transfer Y Register to Accumulator, Implied, 1 Bytes, 2 Cycles
-                case 0x98:
+                case OpCode.TyaImplied:
                     {
                         IncrementCycleCount();
                         Accumulator = YRegister;
@@ -1321,10 +1343,11 @@ namespace Processor
                         SetZeroFlag(Accumulator);
                         break;
                     }
+
                 #endregion
 
                 //NOP Operation, Implied, 1 Byte, 2 Cycles
-                case 0xEA:
+                case OpCode.NopImplied:
                     {
                         IncrementCycleCount();
                         break;
