@@ -156,7 +156,6 @@ namespace Processor.UnitTests
             Assert.Equal(expectedValue, processor.CarryFlag);
         }
 
-        // TODO: `setCarryFlag` is not used, seems to be a mistake.
         [Theory]
         [InlineData(98, 1, false)]
         [InlineData(99, 1, false)]
