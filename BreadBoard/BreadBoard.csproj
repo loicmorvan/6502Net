@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\BreadBoard\BreadBoard.csproj" />
+    <PackageReference Include="System.Reactive" Version="4.3.2" />
   </ItemGroup>
-  
+
 </Project>

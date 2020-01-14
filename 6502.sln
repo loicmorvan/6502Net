@@ -10,6 +10,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Processor.UnitTests", "Proc
 		{F46D0ADD-EE98-4533-A672-AED74EE4B5B7} = {F46D0ADD-EE98-4533-A672-AED74EE4B5B7}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreadBoard", "BreadBoard\BreadBoard.csproj", "{1A20DFA5-4FF7-4553-A92C-E291FDFAAD95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreadBoard.UnitTests", "BreadBoard.UnitTests\BreadBoard.UnitTests.csproj", "{D57A376F-6EB9-463A-9ACE-D635511AC45D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +28,14 @@ Global
 		{9CA121DA-5FC3-4613-8F7E-9AA5BA28F87C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CA121DA-5FC3-4613-8F7E-9AA5BA28F87C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CA121DA-5FC3-4613-8F7E-9AA5BA28F87C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A20DFA5-4FF7-4553-A92C-E291FDFAAD95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A20DFA5-4FF7-4553-A92C-E291FDFAAD95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A20DFA5-4FF7-4553-A92C-E291FDFAAD95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A20DFA5-4FF7-4553-A92C-E291FDFAAD95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D57A376F-6EB9-463A-9ACE-D635511AC45D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D57A376F-6EB9-463A-9ACE-D635511AC45D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D57A376F-6EB9-463A-9ACE-D635511AC45D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D57A376F-6EB9-463A-9ACE-D635511AC45D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
