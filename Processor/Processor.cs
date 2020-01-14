@@ -1406,16 +1406,15 @@ namespace Processor
                         //However, if this is an ASL, LSR, DEC, INC, ROR, ROL or STA operation, we do not decrease it by 1.
                         if (address + XRegister > 0xFF)
                         {
-                            switch ((byte)CurrentOpCode)
+                            switch (CurrentOpCode)
                             {
-                                // TODO: Refacto without the cast to byte.
-                                case 0x1E:
-                                case 0xDE:
-                                case 0xFE:
-                                case 0x5E:
-                                case 0x3E:
-                                case 0x7E:
-                                case 0x9D:
+                                case OpCode.AslAbsoluteX:
+                                case OpCode.DecAbsoluteX:
+                                case OpCode.IncAbsoluteX:
+                                case OpCode.LsrAbsoluteX:
+                                case OpCode.RolAbsoluteX:
+                                case OpCode.RorAbsoluteX:
+                                case OpCode.StaAbsoluteX:
                                     {
                                         //This is a Read Fetch Write Operation, so we don't make the extra read.
                                         return ((highByte << 8 | address) + XRegister) & 0xFFFF;
