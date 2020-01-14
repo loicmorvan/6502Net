@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreadBoard", "BreadBoard\Br
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreadBoard.UnitTests", "BreadBoard.UnitTests\BreadBoard.UnitTests.csproj", "{D57A376F-6EB9-463A-9ACE-D635511AC45D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UT", "UT", "{495CC57C-4725-4825-A12E-14A6132F0FA1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9CA121DA-5FC3-4613-8F7E-9AA5BA28F87C} = {495CC57C-4725-4825-A12E-14A6132F0FA1}
+		{D57A376F-6EB9-463A-9ACE-D635511AC45D} = {495CC57C-4725-4825-A12E-14A6132F0FA1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C34DA332-F425-4D15-B752-1A38872907D3}
