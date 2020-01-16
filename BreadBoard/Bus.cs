@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reactive.Subjects;
 
-namespace Processor
+namespace BreadBoard
 {
     public class Bus<TData>
     {

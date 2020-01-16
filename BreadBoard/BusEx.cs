@@ -1,4 +1,4 @@
-﻿namespace Processor
+﻿namespace BreadBoard
 {
     public static class BusEx
     {

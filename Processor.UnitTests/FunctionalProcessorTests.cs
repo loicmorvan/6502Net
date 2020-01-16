@@ -66,11 +66,9 @@ namespace Processor.UnitTests
         [InlineData(0x2A, 0x3364)] // full binary add/subtract test iterates through all combinations of operands and carry input uses increments/decrements to predict result & result flags
         [InlineData(0x2B, 0x3408)] // Binary Switch Test
         [InlineData(0xF0, 0x3463)] // decimal add/subtract test  *** WARNING - tests documented behavior only! ***   only valid BCD operands are tested, N V Z flags are ignored iterates through all valid combinations of operands and carry input uses increments/decrements to predict result & carry flag
-                                 // ReSharper disable InconsistentNaming
         public void Klaus_Dorman_Functional_Test(int accumulator, int programCounter)
-        // ReSharper restore InconsistentNaming
         {
-            var memory = Memory.LoadProgram(0x400, KdTestProgram, 0x400);
+            var memory = Memory.Memory.LoadProgram(0x400, KdTestProgram, 0x400);
             var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
             
 
@@ -93,11 +91,7 @@ namespace Processor.UnitTests
             }
 
             Assert.Equal(accumulator, processor.Accumulator);
-            // ReSharper disable FunctionNeverReturns
         }
-        // ReSharper restore FunctionNeverReturns
-
-
 
         /// <summary>
         /// Each Test Group in Klaus_Dormann's Interrupt Test Program. 
@@ -113,7 +107,7 @@ namespace Processor.UnitTests
         {
             var previousInterruptWatchValue = 0;
 
-            var memory = Memory.LoadProgram(0x400, InterruptProgram, 0x400);
+            var memory = Memory.Memory.LoadProgram(0x400, InterruptProgram, 0x400);
             var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
             
             var numberOfCycles = 0;
@@ -153,7 +147,7 @@ namespace Processor.UnitTests
         [Fact]
         public void Cycle_Test()
         {
-            var memory = Memory.LoadProgram(0x000, CycleProgram, 0x00);
+            var memory = Memory.Memory.LoadProgram(0x000, CycleProgram, 0x00);
             var processor = new Processor(memory.AddressBus, memory.RwBus, memory.DataBus, memory.ReadyBus);
             
             var numberofLoops = 1;

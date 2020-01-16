@@ -1,4 +1,6 @@
-﻿namespace Processor
+﻿using BreadBoard;
+
+namespace Memory
 {
     public interface IMemory
     {

@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BreadBoard;
+using System;
 using System.Reactive.Linq;
 
-namespace Processor
+namespace Memory
 {
     public class Memory : IMemory
     {

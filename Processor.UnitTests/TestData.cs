@@ -1,4 +1,6 @@
-﻿namespace Processor.UnitTests
+﻿using BreadBoard;
+
+namespace Processor.UnitTests
 {
     public class TestData
     {
